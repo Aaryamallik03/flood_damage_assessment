@@ -54,6 +54,35 @@ def test_parses_all_known_fields_from_sitrep_01():
     assert figures.districts_affected == 5
 
 
+def test_parses_correctly_against_real_scrambled_pdfplumber_layout():
+    """
+    NDRRMA's PDF has a two-column "Human Casualties" infographic (bar chart +
+    stat boxes). pdfplumber's real reading order interleaves those columns
+    line-by-line, which puts the "Deaths" label next to the *missing* count
+    and separates "Injured"/"Discharged" from their numbers by several lines
+    of unrelated caption text. This fixture is the actual text pdfplumber
+    produced on a real download (captured from a user's local run) - it's
+    what caught the original deaths=3916 (should be 987) and injured=None
+    (should be 279) bugs.
+    """
+    fixture_path = os.path.join(
+        os.path.dirname(__file__), "fixtures", "sitrep01_real_pdfplumber_order.txt"
+    )
+    with open(fixture_path) as f:
+        text = f.read()
+
+    figures = parse_sitrep_text(
+        text, sitrep_number=1, source_url="https://ndrrma.gov.np/mediafiles/rasuwa/test.pdf"
+    )
+
+    assert figures.deaths == 987, f"expected 987, got {figures.deaths}"
+    assert figures.missing == 3916, f"expected 3916, got {figures.missing}"
+    assert figures.injured == 279, f"expected 279, got {figures.injured}"
+    assert figures.discharged == 168, f"expected 168, got {figures.discharged}"
+    assert figures.total_rescued == 11814
+    assert figures.security_personnel_deployed == 21011
+
+
 def test_missing_fields_return_none_not_an_exception():
     # A near-empty report should parse without raising, with every figure None.
     figures = parse_sitrep_text(
@@ -76,6 +105,7 @@ def test_commas_in_numbers_are_parsed_correctly():
 
 if __name__ == "__main__":
     test_parses_all_known_fields_from_sitrep_01()
+    test_parses_correctly_against_real_scrambled_pdfplumber_layout()
     test_missing_fields_return_none_not_an_exception()
     test_commas_in_numbers_are_parsed_correctly()
     print("All tests passed.")

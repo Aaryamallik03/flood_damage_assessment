@@ -61,6 +61,7 @@ class SitRepFigures:
     deaths: Optional[int] = None
     missing: Optional[int] = None
     injured: Optional[int] = None
+    discharged: Optional[int] = None
     total_rescued: Optional[int] = None
     security_personnel_deployed: Optional[int] = None
     households_isolated: Optional[int] = None
@@ -226,11 +227,34 @@ def parse_sitrep_text(
         raw_text_excerpt=text[:4000],
     )
 
-    figures.deaths = _find_int(r"Deaths?\s*\n?\s*(\d[\d,]*)", text)
+    # NOTE: the "Human Casualties" info-box in the actual PDF is a two-column
+    # infographic (bar chart + stat boxes). pdfplumber's reading order merges
+    # those columns line-by-line, which scrambles which number sits next to
+    # which label (e.g. "Deaths" ends up adjacent to the *missing* count, not
+    # the deaths count, purely because of vertical position). The flowing-
+    # prose Highlights bullets ("Deceased bodies 987...") don't have this
+    # problem, so they're used as the primary source for deaths; the boxed
+    # layout is only a fallback for reports where that bullet might be absent.
+    figures.deaths = _find_int(r"Deceased bodies\s*(\d[\d,]*)", text) or _find_int(
+        r"Deaths?\s*\n?\s*(\d[\d,]*)", text
+    )
     figures.missing = _find_int(
         r"Total Missing Persons\s*\n?\s*Deaths?\s*\n?\s*[\d,]+\s*\n?\s*(\d[\d,]*)", text
     ) or _find_int(r"Missing individuals\s*([\d,]+)\s*have\s+been\s+reported", text)
-    figures.injured = _find_int(r"Injured\s*\n?\s*(\d[\d,]*)", text)
+    # Same two-column scrambling affects "Injured" / "Discharged": pdfplumber
+    # puts several unrelated lines of caption text between the labels and
+    # their numbers. Try the simple adjacent-number case first (works if a
+    # future report's layout doesn't scramble this box); if that fails, fall
+    # back to finding the first pair of adjacent numbers that follows the
+    # "Injured Discharged" label pair, within a bounded window so it can't
+    # accidentally latch onto an unrelated number much further down the page.
+    figures.injured = _find_int(r"Injured\s*\n?\s*(\d[\d,]*)(?!\s*\d)", text)
+    figures.discharged = None
+    if figures.injured is None:
+        m = re.search(r"Injured\s+Discharged[\s\S]{0,300}?\b(\d[\d,]*)\s+(\d[\d,]*)\b", text)
+        if m:
+            figures.injured = int(m.group(1).replace(",", ""))
+            figures.discharged = int(m.group(2).replace(",", ""))
     figures.total_rescued = _find_int(r"Total Rescued\s*\n?\s*(\d[\d,]*)", text) or _find_int(
         r"([\d,]+)\s*individuals\s+have\s+been\s+rescued", text
     )
