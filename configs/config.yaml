@@ -1,0 +1,42 @@
+# Central config for the flood damage assessment pipeline
+
+project:
+  name: flood-damage-assessment
+  case_study_aoi: "Rasuwa-Nuwakot-Dhading, Nepal"
+  case_study_event_date: "2026-08-26"
+
+data:
+  xbd_root: "data/raw/xbd"
+  sentinel_root: "data/raw/sentinel"
+  processed_root: "data/processed"
+  patch_size: 256
+  train_val_split: 0.85
+
+damage_classifier:
+  backbone: "resnet50"
+  num_classes: 4              # no-damage, minor, major, destroyed
+  pretrained: true
+  batch_size: 16
+  epochs: 25
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  checkpoint_dir: "checkpoints/damage_classifier"
+
+flood_segmentation:
+  architecture: "unet"
+  encoder: "resnet34"
+  in_channels: 2               # SAR VV + VH polarization bands
+  num_classes: 1                # binary: flood / no-flood
+  batch_size: 8
+  epochs: 30
+  learning_rate: 0.0001
+  checkpoint_dir: "checkpoints/flood_segmentation"
+
+inference:
+  device: "cuda"                # will fall back to cpu automatically if unavailable
+  damage_model_path: "backend/models_store/damage_classifier.pt"
+  flood_model_path: "backend/models_store/flood_segmentation.pt"
+
+backend:
+  host: "0.0.0.0"
+  port: 8000
