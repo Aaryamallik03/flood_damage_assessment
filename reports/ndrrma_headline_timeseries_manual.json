@@ -1,0 +1,21 @@
+{
+  "_notes": [
+    "Manually transcribed from the large, unambiguous headline tickers on each report's own infographic page (e.g. 'Total Deaths', 'Total Missing Persons', 'Injured', 'Total Rescued', 'Security Personnel Deployed/Mobilised').",
+    "Automated regex extraction (src/data/ndrrma_sitrep.py) only reliably covers SitRep #01 in full - every later report changed its internal chart/section layout in a different way, so the ~17-field parser silently returns null past #01 rather than risk a wrong number. These headline figures were read directly instead, since they are large, clearly-labeled, and did not require disambiguating scrambled chart text.",
+    "SitRep #02 English source is the file named '2nd_Setrep_Rasuwa_Floods_and_Landslides.pdf' - NDRRMA's filenames are NOT stable across reports (confirmed empirically - see module docstring in ndrrma_sitrep.py), so don't assume this naming pattern holds for future reports either.",
+    "SitRep #06 (Sept 6) was not among the files found/uploaded for this project - there's a gap between #05 and #07.",
+    "'Sep 8' entry comes from a differently-formatted document, 'Situation_update_English_2026_9_08_1PM.pdf' - a flat one-page infographic rather than the multi-page sectioned report used for other dates. Its 'injured' figure is a running total ('Injured Receiving Treatment'), unlike #09 which only exposed a same-day 'Treated' count, not a running injured total - hence injured=null for #09.",
+    "An EARLIER, separate Nepali-language series ('स्थिति प्रतिवेदन #01'-'#08') covers Aug 26-29 (the first ~4 days of the event, before the English daily series began on Sept 1). Those weren't transcribed here: extracting reliable numbers from Devanagari-script OCR text carries a real misreading risk (e.g. digit confusion), and getting this event's true opening death toll wrong would be worse than not having it. If you want that early window added, it's worth doing carefully with a native Nepali reader or dedicated Devanagari-aware parsing rather than a quick transcription.",
+    "None of these figures should be treated as final - NDRRMA explicitly labels missing-persons counts as 'approx.' and revises them report to report as bodies are identified (the dip in 'missing' from ~5,326 on Sep 8 to ~4,894-5,132 on Sep 7/9 reflects identification catching up, not fewer people actually missing)."
+  ],
+  "timeseries": [
+    {"sitrep_number": 1, "date": "2026-09-01", "time": "09:00", "deaths": 987,  "missing_approx": 3916, "injured": 279,  "total_rescued": 11814, "security_personnel": 21011, "source_file": "Rasuwa_Flood_SitRep_Temp_ENG_01_01092026.pdf"},
+    {"sitrep_number": 2, "date": "2026-09-02", "time": "18:00", "deaths": 1204, "missing_approx": 4216, "injured": 301,  "total_rescued": 11993, "security_personnel": 21314, "source_file": "2nd_Setrep_Rasuwa_Floods_and_Landslides.pdf"},
+    {"sitrep_number": 3, "date": "2026-09-03", "time": "18:00", "deaths": 1259, "missing_approx": 5053, "injured": 5384, "total_rescued": 12038, "security_personnel": 21402, "source_file": "SitRep_ENG_03_03092026.pdf"},
+    {"sitrep_number": 4, "date": "2026-09-04", "time": "18:00", "deaths": 1294, "missing_approx": 5053, "injured": 5663, "total_rescued": 13095, "security_personnel": 21421, "source_file": "SitRep_ENG_04_04092026_1XV7wFt.pdf"},
+    {"sitrep_number": 5, "date": "2026-09-05", "time": "19:00", "deaths": 1331, "missing_approx": 4896, "injured": 5929, "total_rescued": 13101, "security_personnel": 21465, "source_file": "SitRep_ENG_05_05092026.pdf"},
+    {"sitrep_number": 7, "date": "2026-09-07", "time": "19:00", "deaths": 1356, "missing_approx": 4894, "injured": 6676, "total_rescued": 13396, "security_personnel": 21402, "source_file": "SitRep_ENG_07_07092026.pdf"},
+    {"sitrep_number": null, "date": "2026-09-08", "time": "13:00", "deaths": 1357, "missing_approx": 5326, "injured": 6827, "total_rescued": 13583, "security_personnel": 21402, "source_file": "Situation_update_English_2026_9_08_1PM.pdf", "note": "flat infographic format, not a numbered SitRep"},
+    {"sitrep_number": 9, "date": "2026-09-09", "time": "19:00", "deaths": 1369, "missing_approx": 5132, "injured": null, "total_rescued": 13646, "security_personnel": 21185, "source_file": "SitRep_ENG_09_09092026.pdf", "note": "injured shown only as same-day 'Treated: 333', not a running total"}
+  ]
+}

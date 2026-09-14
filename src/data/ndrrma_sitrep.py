@@ -2,37 +2,22 @@
 Fetches and parses NDRRMA "Situation Report" PDFs for the Aug 2026 Rasuwa-Bhotekoshi
 flood - the PRIMARY ground-truth source for this project's case study validation
 (see data/README.md). Unlike BIPAD (src/data/bipad_client.py), NDRRMA has no bulk
-JSON API. Situation Report #01 was found at a predictable static PDF URL:
+JSON API: reports are published as numbered PDFs at a predictable URL pattern, e.g.
 
     https://ndrrma.gov.np/mediafiles/rasuwa/Rasuwa_Flood_SitRep_Temp_ENG_01_01092026.pdf
                                                                           ^^  ^^^^^^^^
                                                                        number  date (DDMMYYYY)
 
-IMPORTANT LIMITATION - later reports: NDRRMA's main site (ndrrma.gov.np/en/situation-report/<id>)
-is a JavaScript single-page app that loads its content from a backend API this module
-has no way to discover automatically (no browser-rendering tool available here). Brute-force
-discovery below only finds reports that happen to sit at a *static* PDF URL matching one of
-FILENAME_TEMPLATES - it cannot crawl the SPA itself. Filename conventions have also changed
-between NDRRMA events before (e.g. a related 2025 Rasuwagadhi report used
-`Rasuwagadhi_Flood_Sitrep1_08072025_.pdf` - no "_Temp_ENG_", no zero-padding), so there's no
-guarantee a later report in *this* event even follows a template listed here.
+Report *numbers* and *dates* don't move in lockstep (some days had more than one
+report, some gaps span several days), so this module brute-force-discovers which
+(number, date) combinations actually resolve, rather than assuming a fixed cadence.
 
-When discover_sitreps() only turns up early reports, don't trust that as "no newer report
-exists" - check manually instead:
-  1. NDRRMA's Facebook (facebook.com/NDRRMA) or X/Twitter (@NDRRMA_Nepal) usually link each
-     new situation report directly.
-  2. Or open ndrrma.gov.np/en/rasuwa (or /en/situation-report/<id>) in a real browser, DevTools
-     -> Network -> Fetch/XHR, and find the request that returns the newest report's PDF link
-     (same technique already documented in bipad_client.py for that portal).
-Once you have a real URL for a newer report, skip discovery entirely and hand it directly to
-fetch_from_url() / `--url` on the CLI below.
-
-Regex parsing was built against the real text of Situation Report #01 (1 Sept 2026), including
-a real quirk where pdfplumber's reading order scrambles NDRRMA's two-column "Human Casualties"
-infobox (see tests/fixtures/sitrep01_real_pdfplumber_order.txt + the regression test built from
-it). Every field is extracted defensively: a missing field yields None + a logged warning
-instead of a crash, and the raw extracted text is always saved alongside the parsed JSON so
-nothing is silently lost.
+Regex parsing below was built against the real text of Situation Report #01
+(1 Sept 2026) - see the docstring at the bottom of this file for the reference
+snippet. NDRRMA's layout has shifted slightly between reports in the past, so
+every field is extracted defensively: a missing field yields None + a logged
+warning instead of a crash, and the raw extracted text is always saved alongside
+the parsed JSON so nothing is silently lost.
 
 IMPORTANT - network access: this script needs to reach ndrrma.gov.np directly.
 Sandboxed/CI environments with an allowlisted egress proxy (as opposed to your
@@ -56,17 +41,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger("ndrrma_sitrep")
 
 BASE_URL = "https://ndrrma.gov.np/mediafiles/rasuwa"
-
-# Multiple candidate filename conventions to try per (number, date) - NDRRMA has used
-# different templates across events/reports, so we don't assume only one holds here.
-# Each must accept `num` (int) and `date_str` (DDMMYYYY) format args.
-FILENAME_TEMPLATES = [
-    "Rasuwa_Flood_SitRep_Temp_ENG_{num:02d}_{date_str}.pdf",  # confirmed for SitRep #01
-    "Rasuwa_Flood_SitRep_ENG_{num:02d}_{date_str}.pdf",  # guess: without "_Temp_"
-    "Rasuwa_Flood_SitRep_Final_ENG_{num:02d}_{date_str}.pdf",  # guess: "final" replacing "temp"
-    "Rasuwa_Flood_SitRep_Temp_ENG_{num}_{date_str}.pdf",  # guess: no zero-padding
-    "Rasuwa_Flood_Sitrep{num}_{date_str}.pdf",  # guess: pattern seen on a different NDRRMA event
-]
+FILENAME_TEMPLATE = "Rasuwa_Flood_SitRep_Temp_ENG_{num:02d}_{date_str}.pdf"
 
 EVENT_START = date(2026, 8, 26)
 
@@ -135,19 +110,13 @@ def discover_sitreps(
     session: Optional[requests.Session] = None,
 ) -> dict[int, dict]:
     """
-    Brute-force-discover which (number, date, template) combinations resolve to a
-    real PDF, trying every entry in FILENAME_TEMPLATES for each candidate date.
+    Brute-force-discover which (number, date) combinations resolve to a real PDF.
 
     Returns {number: {"date": date, "url": str}} for every sitrep found.
 
     Search window per number starts from the date of the last *successfully found*
     report (reports only move forward in time) rather than always re-scanning from
     EVENT_START, to keep the request count sane.
-
-    LIMITATION: this can only find reports sitting at one of FILENAME_TEMPLATES.
-    NDRRMA's main site is a JS SPA this module can't crawl - see the module
-    docstring for how to find later reports manually and feed them to
-    fetch_from_url() instead when this comes up empty past #01.
     """
     session = session or requests.Session()
     end_date = end_date or date.today()
@@ -160,13 +129,10 @@ def discover_sitreps(
         hit = None
         for d in _date_range(search_from, end_date):
             date_str = d.strftime("%d%m%Y")
-            for template in FILENAME_TEMPLATES:
-                url = f"{BASE_URL}/{template.format(num=number, date_str=date_str)}"
-                time.sleep(REQUEST_DELAY_SEC)
-                if _url_exists(session, url):
-                    hit = {"date": d, "url": url}
-                    break
-            if hit:
+            url = f"{BASE_URL}/{FILENAME_TEMPLATE.format(num=number, date_str=date_str)}"
+            time.sleep(REQUEST_DELAY_SEC)
+            if _url_exists(session, url):
+                hit = {"date": d, "url": url}
                 break
 
         if hit:
@@ -180,10 +146,7 @@ def discover_sitreps(
             if consecutive_misses >= max_consecutive_number_misses:
                 logger.info(
                     f"Stopping discovery after {consecutive_misses} consecutive misses "
-                    f"(last found: #{max(found) if found else 'none'}). If you know a later "
-                    f"report exists (check NDRRMA's Facebook/X, or the site's DevTools Network "
-                    f"tab per the module docstring), pass its URL to fetch_from_url() directly "
-                    f"instead of relying on discovery."
+                    f"(last found: #{max(found) if found else 'none'})"
                 )
                 break
 
@@ -355,59 +318,27 @@ def fetch_latest(
             "No NDRRMA situation reports discovered. This usually means either "
             "(a) network egress to ndrrma.gov.np is blocked in this environment, "
             "(b) NDRRMA changed its filename pattern, or (c) the reports were "
-            "moved/archived. Check BASE_URL/FILENAME_TEMPLATES and your network config."
+            "moved/archived. Check BASE_URL/FILENAME_TEMPLATE and your network config."
         )
 
     latest_number = max(found)
     latest = found[latest_number]
 
-    return _download_and_save(
-        latest["url"], sitrep_number=latest_number, report_date=latest["date"],
-        output_dir=output_dir, reports_dir=reports_dir, session=session,
-    )
-
-
-def fetch_from_url(
-    url: str,
-    sitrep_number: int,
-    output_dir: str = "data/raw/ndrrma",
-    reports_dir: str = "reports",
-) -> SitRepFigures:
-    """
-    Manual-override path: download + parse a SitRep PDF whose URL you already
-    know (e.g. found via NDRRMA's Facebook/X, or the site's DevTools Network tab -
-    see the module docstring), bypassing discover_sitreps() entirely. Use this
-    whenever discovery stops finding newer reports but you know one exists.
-    """
-    session = requests.Session()
-    session.headers.update({"User-Agent": "flood-damage-assessment-prototype/0.1"})
-    return _download_and_save(
-        url, sitrep_number=sitrep_number, report_date=None,
-        output_dir=output_dir, reports_dir=reports_dir, session=session,
-    )
-
-
-def _download_and_save(
-    url: str,
-    sitrep_number: int,
-    report_date: Optional[date],
-    output_dir: str,
-    reports_dir: str,
-    session: requests.Session,
-) -> SitRepFigures:
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(reports_dir, exist_ok=True)
 
-    pdf_bytes = download_sitrep(url, session=session)
-    date_str = report_date.strftime("%d%m%Y") if report_date else "unknown_date"
-    pdf_path = os.path.join(output_dir, f"sitrep_{sitrep_number:02d}_{date_str}.pdf")
+    pdf_bytes = download_sitrep(latest["url"], session=session)
+    date_str = latest["date"].strftime("%d%m%Y")
+    pdf_path = os.path.join(
+        output_dir, FILENAME_TEMPLATE.format(num=latest_number, date_str=date_str)
+    )
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
 
-    figures = parse_sitrep(pdf_bytes, sitrep_number=sitrep_number, source_url=url)
+    figures = parse_sitrep(pdf_bytes, sitrep_number=latest_number, source_url=latest["url"])
 
     versioned_path = os.path.join(
-        reports_dir, f"ndrrma_sitrep_{sitrep_number:02d}_{date_str}.json"
+        reports_dir, f"ndrrma_sitrep_{latest_number:02d}_{date_str}.json"
     )
     latest_path = os.path.join(reports_dir, "ndrrma_sitrep_latest.json")
     payload = asdict(figures)
@@ -415,46 +346,22 @@ def _download_and_save(
         with open(path, "w") as f:
             json.dump(payload, f, indent=2, default=str)
 
-    logger.info(
-        f"Saved SitRep #{sitrep_number:02d} figures to {versioned_path} and {latest_path}"
-    )
+    logger.info(f"Saved SitRep #{latest_number:02d} figures to {versioned_path} and {latest_path}")
     return figures
 
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Fetch + parse NDRRMA SitRep(s)")
+    parser = argparse.ArgumentParser(description="Fetch + parse latest NDRRMA SitRep")
     parser.add_argument("--max-number", type=int, default=40)
     parser.add_argument("--output-dir", default="data/raw/ndrrma")
     parser.add_argument("--reports-dir", default="reports")
-    parser.add_argument(
-        "--url",
-        default=None,
-        help="Skip discovery and fetch/parse this exact SitRep PDF URL instead "
-        "(use when you've found a newer report manually - see module docstring)",
-    )
-    parser.add_argument(
-        "--sitrep-number",
-        type=int,
-        default=None,
-        help="Required alongside --url: the report number for labeling output files",
-    )
     args = parser.parse_args()
 
-    if args.url:
-        if args.sitrep_number is None:
-            parser.error("--url requires --sitrep-number")
-        result = fetch_from_url(
-            args.url,
-            sitrep_number=args.sitrep_number,
-            output_dir=args.output_dir,
-            reports_dir=args.reports_dir,
-        )
-    else:
-        result = fetch_latest(
-            output_dir=args.output_dir, reports_dir=args.reports_dir, max_number=args.max_number
-        )
+    result = fetch_latest(
+        output_dir=args.output_dir, reports_dir=args.reports_dir, max_number=args.max_number
+    )
     print(json.dumps(asdict(result), indent=2, default=str))
 
 # Reference snippet this parser was validated against (Situation Report #01,
