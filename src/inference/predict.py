@@ -10,23 +10,23 @@ from torchvision import transforms
 from src.models.damage_classifier import CLASS_NAMES, SiameseDamageClassifier
 from src.models.flood_segmentation import FloodSegmentationWrapper
 
-_IMAGE_TRANSFORM = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
-
 
 class DamagePredictor:
-    def __init__(self, checkpoint_path: str, backbone: str = "resnet50", device: str = None):
+    def __init__(self, checkpoint_path: str, backbone: str = "resnet50", patch_size: int = 224, device: str = None):
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.model = SiameseDamageClassifier(backbone=backbone, num_classes=len(CLASS_NAMES), pretrained=False)
         self.model.load_state_dict(torch.load(checkpoint_path, map_location=self.device))
         self.model.to(self.device).eval()
 
+        self.transform = transforms.Compose([
+            transforms.Resize((patch_size, patch_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
     def predict(self, pre_image_path: str, post_image_path: str) -> dict:
-        pre_img = _IMAGE_TRANSFORM(Image.open(pre_image_path).convert("RGB")).unsqueeze(0).to(self.device)
-        post_img = _IMAGE_TRANSFORM(Image.open(post_image_path).convert("RGB")).unsqueeze(0).to(self.device)
+        pre_img = self.transform(Image.open(pre_image_path).convert("RGB")).unsqueeze(0).to(self.device)
+        post_img = self.transform(Image.open(post_image_path).convert("RGB")).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             logits = self.model(pre_img, post_img)

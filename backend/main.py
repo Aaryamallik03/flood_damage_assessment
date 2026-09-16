@@ -12,6 +12,7 @@ Endpoints:
 
 import os
 
+import yaml
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -30,13 +31,19 @@ app.add_middleware(
 MODELS_DIR = "backend/models_store"
 damage_predictor = None  # lazy-loaded on first request, or at startup if checkpoint exists
 
+with open("configs/config.yaml") as f:
+    _config = yaml.safe_load(f)
+
 
 @app.on_event("startup")
 def load_models():
     global damage_predictor
     checkpoint_path = os.path.join(MODELS_DIR, "damage_classifier.pt")
     if os.path.exists(checkpoint_path):
-        damage_predictor = DamagePredictor(checkpoint_path=checkpoint_path)
+        damage_predictor = DamagePredictor(
+            checkpoint_path=checkpoint_path,
+            patch_size=_config["damage_classifier"]["patch_size"],
+        )
         print("Damage classifier loaded.")
     else:
         print(f"No checkpoint found at {checkpoint_path} - /predict/damage will error until you train and place one there.")
