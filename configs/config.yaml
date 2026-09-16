@@ -1,4 +1,4 @@
-# Central config for the flood damage assessment pipeline
+﻿# Central config for the flood damage assessment pipeline
 
 project:
   name: flood-damage-assessment
@@ -9,13 +9,19 @@ data:
   xbd_root: "data/raw/xbd"
   sentinel_root: "data/raw/sentinel"
   processed_root: "data/processed"
-  patch_size: 256
   train_val_split: 0.85
 
 damage_classifier:
   backbone: "resnet50"
   num_classes: 4              # no-damage, minor, major, destroyed
   pretrained: true
+  patch_size: 224              # must match inference/predict.py's _IMAGE_TRANSFORM (also 224) -
+                                # standard ImageNet input size for resnet backbones. Do not
+                                # share this value with flood_segmentation.patch_size below;
+                                # they're unrelated models with unrelated resolution needs, and
+                                # training at one size while predict.py hardcodes another would
+                                # silently degrade accuracy without erroring (ResNet's adaptive
+                                # pooling absorbs the size mismatch instead of raising).
   batch_size: 16
   epochs: 25
   learning_rate: 0.0001
@@ -27,6 +33,7 @@ flood_segmentation:
   encoder: "resnet34"
   in_channels: 2               # SAR VV + VH polarization bands
   num_classes: 1                # binary: flood / no-flood
+  patch_size: 256               # independent of damage_classifier.patch_size above - keep it that way
   batch_size: 8
   epochs: 30
   learning_rate: 0.0001

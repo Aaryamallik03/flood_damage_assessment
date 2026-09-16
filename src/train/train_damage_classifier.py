@@ -33,7 +33,7 @@ def train(config: dict):
     dataset = XBDDamageDataset(
         images_dir=os.path.join(data_cfg["xbd_root"], "images"),
         labels_dir=os.path.join(data_cfg["xbd_root"], "labels"),
-        patch_size=data_cfg["patch_size"],
+        patch_size=cfg["patch_size"],
     )
 
     val_size = int(len(dataset) * (1 - data_cfg["train_val_split"]))
