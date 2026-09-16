@@ -92,9 +92,37 @@ class XBDDamageDataset(Dataset):
         return sum(xs) / len(xs), sum(ys) / len(ys)
 
     def _crop_patch(self, image: Image.Image, centroid: Tuple[float, float]) -> Image.Image:
+        """
+        Crop a patch_size x patch_size window centered on the building centroid.
+
+        Buildings near a tile's edge would otherwise get a box that runs outside
+        the image - PIL's crop() doesn't error on that, it just pads the
+        out-of-bounds area with black, so this failed silently. For a building
+        within half a patch-size of the edge (common - xBD tiles are 1024x1024
+        and this default patch_size is 224, so anything within 112px of any
+        edge is affected), that can mean 60-70%+ of the "building" patch is
+        black filler rather than actual imagery, which would starve the model
+        of real signal for exactly the buildings it's being trained to judge.
+
+        Fix: shift the box to stay fully inside the image bounds (as long as
+        the image is at least patch_size in both dimensions, which holds for
+        xBD's 1024x1024 tiles), rather than clipping/padding.
+        """
         cx, cy = centroid
         half = self.patch_size // 2
-        box = (cx - half, cy - half, cx + half, cy + half)
+        img_w, img_h = image.size
+
+        left = cx - half
+        top = cy - half
+
+        # Shift right/down if the box would start before the image...
+        left = max(left, 0)
+        top = max(top, 0)
+        # ...and shift left/up if it would run past the far edge.
+        left = min(left, img_w - self.patch_size)
+        top = min(top, img_h - self.patch_size)
+
+        box = (left, top, left + self.patch_size, top + self.patch_size)
         return image.crop(box)
 
     def __len__(self):
