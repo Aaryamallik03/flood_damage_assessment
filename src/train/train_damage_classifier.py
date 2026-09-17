@@ -7,6 +7,11 @@ Callable from a Colab notebook like:
 
 Or standalone:
     python -m src.train.train_damage_classifier --config configs/config.yaml
+
+Supports resuming: if checkpoint_dir/last_checkpoint.pt exists, training picks
+up from the saved epoch and optimizer state instead of starting over. This
+matters a lot on Colab, where a session can disconnect mid-run - without this,
+every disconnect meant losing all completed epochs and restarting from zero.
 """
 
 import argparse
@@ -54,8 +59,19 @@ def train(config: dict):
 
     os.makedirs(cfg["checkpoint_dir"], exist_ok=True)
     best_val_f1 = 0.0
+    start_epoch = 0
 
-    for epoch in range(cfg["epochs"]):
+    last_checkpoint_path = os.path.join(cfg["checkpoint_dir"], "last_checkpoint.pt")
+    if os.path.exists(last_checkpoint_path):
+        print(f"Found existing checkpoint at {last_checkpoint_path}, resuming...")
+        checkpoint = torch.load(last_checkpoint_path, map_location=device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        start_epoch = checkpoint["epoch"] + 1
+        best_val_f1 = checkpoint["best_val_f1"]
+        print(f"Resuming from epoch {start_epoch + 1}, best_val_f1 so far: {best_val_f1:.4f}")
+
+    for epoch in range(start_epoch, cfg["epochs"]):
         model.train()
         running_loss = 0.0
 
@@ -81,6 +97,15 @@ def train(config: dict):
             checkpoint_path = os.path.join(cfg["checkpoint_dir"], "best_model.pt")
             torch.save(model.state_dict(), checkpoint_path)
             print(f"  -> New best model saved to {checkpoint_path}")
+
+        # Save a full resumable checkpoint after every epoch, not just on improvement -
+        # this is what lets a disconnect mid-run cost at most one epoch's progress.
+        torch.save({
+            "epoch": epoch,
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "best_val_f1": best_val_f1,
+        }, last_checkpoint_path)
 
     print(f"Training complete. Best val F1 (macro): {best_val_f1:.4f}")
 
