@@ -1,78 +1,482 @@
-# Flood Damage Assessment System
+# 🌊 Flood Damage Assessment Using Deep Learning
 
-AI/ML-based flood damage assessment prototype, developed as a final year project.
-Case study: August 26, 2026 Bhotekoshi/Trishuli flash flood (Rasuwa, Nuwakot, Dhading districts, Nepal).
+An end-to-end deep learning project for assessing disaster impact from satellite and aerial imagery. The system combines **building-level damage classification** from pre- and post-disaster imagery with **flood extent segmentation** using SAR data.
 
-**Scope: working ML prototype**, not a production/official-deployment system. It demonstrates
-end-to-end feasibility: flood extent detection + building damage classification + a
-dashboard that visualizes results on a map.
+The project is designed to support rapid post-disaster assessment by automatically identifying damaged buildings and mapping flooded areas.
 
 ---
 
-## Repo Structure
+## 🚀 Project Overview
 
+Natural disasters such as floods can damage buildings and infrastructure across large geographic areas. Manual assessment is time-consuming and difficult, especially when affected regions are difficult to access.
+
+This project explores how deep learning and remote-sensing imagery can automate parts of the disaster assessment process.
+
+### The system contains two major components:
+
+| Component                         | Input                       | Output            | Approach                |
+| --------------------------------- | --------------------------- | ----------------- | ----------------------- |
+| 🏠 Building Damage Classification | Pre- & post-disaster images | Damage severity   | Siamese CNN + ResNet-50 |
+| 🌊 Flood Extent Segmentation      | SAR imagery                 | Flooded-area mask | Semantic segmentation   |
+
+### Building damage classes
+
+The damage classifier predicts four xBD-style categories:
+
+* **No Damage**
+* **Minor Damage**
+* **Major Damage**
+* **Destroyed**
+
+---
+
+## 🧠 System Architecture
+
+### 1. Building Damage Classification
+
+The damage classifier uses a **Siamese convolutional neural network** with shared ResNet-50 encoders.
+
+Two corresponding image patches are processed:
+
+```text
+             Pre-disaster image
+                    │
+                    ▼
+              ┌───────────┐
+              │ ResNet-50 │
+              └─────┬─────┘
+                    │
+                    ▼
+              Feature Vector
+                    │
+                    │
+                    ├──────────────┐
+                    │              │
+                    ▼              ▼
+              ┌────────────────────────┐
+              │ Feature Concatenation  │
+              └────────────┬───────────┘
+                           │
+                           ▼
+                    Classification
+                           │
+                           ▼
+        ┌────────────────────────────────┐
+        │ No / Minor / Major / Destroyed │
+        └────────────────────────────────┘
+                           ▲
+                           │
+                    Feature Vector
+                           ▲
+                           │
+              ┌────────────┐
+              │ ResNet-50  │
+              └─────┬──────┘
+                    │
+                    ▼
+             Post-disaster image
 ```
+
+The two branches share the same encoder weights, allowing the network to learn representations from both pre- and post-disaster imagery before comparing their combined features.
+
+---
+
+## 🌊 2. Flood Extent Segmentation
+
+The second component works with **Synthetic Aperture Radar (SAR)** imagery.
+
+Unlike optical imagery, SAR can be useful in conditions where clouds or poor visibility make conventional imagery difficult to use.
+
+The segmentation pipeline processes SAR data and produces a pixel-level flood mask:
+
+```text
+SAR Image
+    │
+    ▼
+Preprocessing
+    │
+    ▼
+Segmentation Model
+    │
+    ▼
+Flood Probability / Mask
+    │
+    ▼
+Flooded Area Map
+```
+
+---
+
+## 📊 Dataset
+
+The building damage component uses the **xBD/xView2 disaster-damage dataset**.
+
+The preprocessing pipeline filters the available disaster labels for flood-related events and extracts building-centered image patches from the corresponding pre- and post-disaster imagery.
+
+### Building samples used
+
+**45,709 building samples**
+
+Class distribution:
+
+| Damage Class |    Samples |
+| ------------ | ---------: |
+| No Damage    |     23,424 |
+| Minor Damage |      9,360 |
+| Major Damage |     10,302 |
+| Destroyed    |      2,623 |
+| **Total**    | **45,709** |
+
+The dataset is imbalanced, with destroyed buildings representing the smallest class.
+
+---
+
+## ⚙️ Preprocessing
+
+For each building annotation:
+
+1. The building footprint is read from the disaster label.
+2. The building centroid is calculated.
+3. A corresponding patch is extracted from the pre-disaster image.
+4. The same spatial region is extracted from the post-disaster image.
+5. Images are resized to **224 × 224**.
+6. Images are converted to tensors.
+7. ImageNet normalization is applied.
+
+The same spatial location is therefore compared before and after the disaster.
+
+---
+
+## 🏗️ Model
+
+### Siamese ResNet-50
+
+The damage classification model consists of:
+
+* ResNet-50 image encoder
+* Shared weights between pre- and post-disaster branches
+* Feature concatenation
+* Fully connected classification head
+* ReLU activations
+* Dropout regularization
+* Four-class output
+
+### Classification head
+
+```text
+2048 + 2048 features
+        │
+        ▼
+     Linear
+      4096 → 512
+        │
+       ReLU
+        │
+     Dropout
+        │
+        ▼
+     Linear
+       512 → 128
+        │
+       ReLU
+        │
+     Dropout
+        │
+        ▼
+     Linear
+       128 → 4
+        │
+        ▼
+Damage Class
+```
+
+---
+
+## 📈 Model Evaluation
+
+A **2,000-sample stratified diagnostic evaluation** was performed using 500 samples from each damage category.
+
+> **Important:** this is a diagnostic evaluation subset drawn from the overall dataset, not a clean independent test set. Because the original training process used a random split without saving the split indices, these results should not be interpreted as final generalization performance.
+
+### Diagnostic results
+
+| Metric            |     Result |
+| ----------------- | ---------: |
+| Samples evaluated |      2,000 |
+| Accuracy          | **96.45%** |
+| Macro F1          | **96.43%** |
+
+### Per-class performance
+
+| Class        | Precision | Recall |   F1 |
+| ------------ | --------: | -----: | ---: |
+| No Damage    |      0.94 |   1.00 | 0.97 |
+| Minor Damage |      0.95 |   0.99 | 0.97 |
+| Major Damage |      0.98 |   0.96 | 0.97 |
+| Destroyed    |      1.00 |   0.90 | 0.95 |
+
+### Confusion Matrix
+
+```text
+                 Predicted
+              No   Min  Maj  Des
+
+Actual No     499    1    0    0
+       Min      3  496    1    0
+       Maj     10    8  482    0
+       Des     21   18    9  452
+```
+
+The most notable error pattern is confusion involving the **destroyed** class, which has the smallest number of training samples.
+
+---
+
+## 🧪 Example Inference
+
+The trained checkpoint can be loaded with the inference pipeline:
+
+```python
+from src.inference.predict import DamagePredictor
+
+predictor = DamagePredictor("best_model.pt")
+
+result = predictor.predict(
+    "path/to/pre_disaster.png",
+    "path/to/post_disaster.png"
+)
+
+print(result)
+```
+
+Example output:
+
+```text
+{
+    'damage_class': 'no-damage',
+    'confidence': 0.9997,
+    'class_probabilities': {
+        'no-damage': 0.9997,
+        'minor-damage': 0.0002,
+        'major-damage': 0.00005,
+        'destroyed': 0.00002
+    }
+}
+```
+
+> **Inference note:** the current `DamagePredictor` interface expects image paths, but the model was trained on building-centered patches. For production-quality building-level inference, the inference pipeline should first identify or receive a building footprint/centroid and crop the corresponding patch before classification.
+
+---
+
+## 🗂️ Project Structure
+
+```text
 flood-damage-assessment/
-├── configs/                  # YAML configs for training/inference
-├── data/
-│   ├── raw/                  # Raw downloaded datasets (xBD, Sentinel scenes) - gitignored
-│   └── processed/            # Preprocessed tensors/patches ready for training
-├── notebooks/                # Colab notebooks - THIS IS WHERE YOU TRAIN
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_train_damage_classifier.ipynb
-│   ├── 03_train_flood_segmentation.ipynb
-│   └── 04_inference_demo.ipynb
+│
+├── backend/
+│   └── main.py
+│
+├── configs/
+│   └── config.yaml
+│
 ├── src/
-│   ├── data/                 # Dataset download + preprocessing scripts
-│   ├── models/                # Model architectures (Siamese CNN, U-Net)
-│   ├── train/                 # Training loop scripts (callable from notebooks or CLI)
-│   ├── inference/             # Run trained models on new imagery
-│   └── utils/                 # Metrics, visualization helpers
-├── backend/                  # FastAPI serving layer (loads trained weights, exposes /predict)
-├── frontend/                  # Dashboard (React + Leaflet) - stub for now
-├── reports/                   # Case study write-up, results
-└── tests/                     # Unit tests for model/data code
+│   ├── data/
+│   │   ├── bipad_client.py
+│   │   ├── download_sentinel*.py
+│   │   ├── download_xbd.py
+│   │   ├── ndrrma_sitre*.py
+│   │   └── preprocessing.py
+│   │
+│   ├── inference/
+│   │   └── predict.py
+│   │
+│   ├── models/
+│   │   ├── damage_classifier.py
+│   │   └── flood_segmentation.py
+│   │
+│   ├── train/
+│   │   ├── train_damage_classifier.py
+│   │   └── train_segmentation*.py
+│   │
+│   └── utils/
+│       └── metrics.py
+│
+├── tests/
+│
+├── evaluate_model.py
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-## Why this structure works with Colab-only compute
+## 🛠️ Tech Stack
 
-- All **training** happens in `notebooks/`, run on Colab GPU runtime (T4/A100 depending on plan).
-- `src/` holds the actual reusable code — notebooks just `!git clone` this repo (or mount Drive)
-  and import from `src/`, so your training logic isn't trapped in unreusable notebook cells.
-- Trained model weights (`.pt` files) get saved to Google Drive from Colab, then downloaded into
-  `backend/models_store/` for serving/demo purposes.
-- The FastAPI backend + dashboard can run locally on your laptop (CPU is fine for *inference*,
-  only *training* needs the Colab GPU).
+**Programming**
+
+* Python
+* PyTorch
+* Torchvision
+* NumPy
+* OpenCV
+* Rasterio
+* scikit-learn
+
+**Deep Learning**
+
+* ResNet-50
+* Siamese CNN architecture
+* Semantic segmentation
+* Transfer learning
+
+**Remote Sensing**
+
+* xBD/xView2 imagery
+* SAR imagery
+* Pre/post-disaster image analysis
+* Flood-mask generation
+
+**Development**
+
+* Google Colab
+* Git
+* GitHub
 
 ---
 
-## Setup (Colab workflow)
+## 💻 Installation
 
-1. Push this repo to GitHub (private repo is fine).
-2. In Colab: `!git clone https://github.com/<you>/flood-damage-assessment.git`
-3. `%cd flood-damage-assessment && pip install -r requirements.txt`
-4. Mount Google Drive to persist datasets/checkpoints across sessions:
-   ```python
-   from google.colab import drive
-   drive.mount('/content/drive')
-   ```
-5. Run `notebooks/01_data_exploration.ipynb` first to download and inspect the xBD dataset.
-6. Proceed to `02_train_damage_classifier.ipynb`.
+Clone the repository:
 
-See `data/README.md` for dataset acquisition details (xBD, Sentinel-1/2).
+```bash
+git clone https://github.com/Aaryamallik03/flood_damage_assessment.git
+cd flood_damage_assessment
+```
+
+Create a virtual environment:
+
+### Windows
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+### Linux/macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## Build Order
+## ▶️ Running the Project
 
-1. **Damage classification model** (xBD dataset — already labeled, fastest path to a working demo)
-2. **Flood extent segmentation** (Sentinel-1 SAR change detection + U-Net)
-3. **Backend API** to serve both models
-4. **Dashboard** to visualize results on a map
-5. **Case study**: run the pipeline on Aug 2026 Nepal flood imagery, compare to reported figures
+### Train the damage classifier
 
-## License / Attribution
-xBD dataset: see https://xview2.org (cite the xView2 paper in your report).
-Sentinel data: Copernicus Open Access Hub, free under ESA's data policy.
+```bash
+python src/train/train_damage_classifier.py
+```
+
+### Evaluate the model
+
+```bash
+python evaluate_model.py
+```
+
+### Run inference
+
+```python
+from src.inference.predict import DamagePredictor
+
+predictor = DamagePredictor("best_model.pt")
+
+result = predictor.predict(
+    "pre_disaster.png",
+    "post_disaster.png"
+)
+
+print(result)
+```
+
+---
+
+## 📦 Model Checkpoint
+
+The trained `best_model.pt` checkpoint is approximately **98 MB** and is intentionally not stored directly in the Git repository.
+
+The repository contains the model architecture and inference code required to load the checkpoint.
+
+For reproducibility, the trained checkpoint can be distributed separately or through Git LFS / release assets.
+
+---
+
+## 🔬 Current Limitations
+
+This project is still under development.
+
+Important limitations include:
+
+* The current damage evaluation is not based on an independent event-level test set.
+* The original training script uses a random train/validation split.
+* Related buildings from the same disaster imagery can therefore potentially appear across different splits.
+* The current inference wrapper needs building-centered cropping to exactly match the training setup.
+* The segmentation component requires further evaluation on a properly held-out SAR dataset.
+* Real-world deployment would require additional geographic and disaster-event validation.
+
+---
+
+## 🚧 Future Improvements
+
+Planned improvements include:
+
+* [ ] Event-level train/validation/test splitting
+* [ ] Independent disaster-event evaluation
+* [ ] Building footprint detection for automatic cropping
+* [ ] Improved handling of class imbalance
+* [ ] Precision/recall and calibration analysis
+* [ ] SAR flood segmentation evaluation
+* [ ] Interactive disaster-assessment dashboard
+* [ ] Map-based visualization of damaged buildings and flooded areas
+* [ ] REST API for model inference
+* [ ] Deployment on cloud infrastructure
+* [ ] Explainable AI using Grad-CAM or related visualization techniques
+
+---
+
+## 🎯 Project Goal
+
+The long-term goal is to develop a practical **AI-assisted disaster assessment pipeline** capable of combining multiple sources of remote-sensing data to provide rapid information about:
+
+**Where is the flooding?**
+
+**Which buildings are damaged?**
+
+**How severe is the damage?**
+
+This can help demonstrate how computer vision, deep learning, and geospatial data can be combined for real-world disaster-response applications.
+
+---
+
+## 👩‍💻 Author
+
+**Aarya Mallik**
+
+B.Tech Computer Science Engineering
+NIT Meghalaya
+
+Interested in **Data Science, Machine Learning, Computer Vision, and AI for real-world applications**.
+
+---
+
+## ⭐ Acknowledgements
+
+This project builds upon publicly available disaster-imagery and remote-sensing datasets and open-source deep learning tools.
+
+If you find the project useful, consider ⭐ starring the repository.
