@@ -1,4 +1,4 @@
-﻿# Central config for the flood damage assessment pipeline
+# Central config for the flood damage assessment pipeline
 
 project:
   name: flood-damage-assessment

@@ -23,11 +23,15 @@ DAMAGE_LABEL_MAP = {
     "minor-damage": 1,
     "major-damage": 2,
     "destroyed": 3,
-    "un-classified": 0,
+    "un-classified": 0,  # treat unclassified as no-damage; revisit if this skews results
 }
 
 
 def filter_flood_events(labels_dir: str) -> List[str]:
+    """
+    Scans xBD label JSONs and returns filenames belonging to flood-related events.
+    xBD label files are named like: <event>_<id>_post_disaster.json
+    """
     flood_files = []
     for fname in os.listdir(labels_dir):
         if not fname.endswith("_post_disaster.json"):
@@ -39,6 +43,19 @@ def filter_flood_events(labels_dir: str) -> List[str]:
 
 
 class XBDDamageDataset(Dataset):
+    """
+    Loads (pre_image_patch, post_image_patch, damage_label) triples from xBD.
+
+    Expects xBD's standard structure:
+        images/<id>_pre_disaster.png
+        images/<id>_post_disaster.png
+        labels/<id>_post_disaster.json   (contains building polygons + damage labels)
+
+    For simplicity this crops a fixed-size patch around each building's polygon
+    centroid rather than doing precise polygon masking - good enough for a
+    classification model, and much simpler to implement under time pressure.
+    """
+
     def __init__(self, images_dir: str, labels_dir: str, patch_size: int = 224, transform=None):
         self.images_dir = images_dir
         self.labels_dir = labels_dir
@@ -51,6 +68,7 @@ class XBDDamageDataset(Dataset):
         self.samples = self._build_sample_index()
 
     def _build_sample_index(self) -> List[Tuple[str, dict]]:
+        """Parses label JSONs and returns a flat list of (base_id, building_annotation)."""
         samples = []
         flood_labels = filter_flood_events(self.labels_dir)
         for label_file in flood_labels:
@@ -67,20 +85,40 @@ class XBDDamageDataset(Dataset):
 
     @staticmethod
     def _polygon_centroid(wkt_str: str) -> Tuple[float, float]:
+        """Rough centroid extraction from a WKT POLYGON string without a full geometry lib."""
         coords_str = wkt_str.split("((")[1].split("))")[0]
         points = [tuple(map(float, p.strip().split(" "))) for p in coords_str.split(",")]
         xs, ys = zip(*points)
         return sum(xs) / len(xs), sum(ys) / len(ys)
 
     def _crop_patch(self, image: Image.Image, centroid: Tuple[float, float]) -> Image.Image:
+        """
+        Crop a patch_size x patch_size window centered on the building centroid.
+
+        Buildings near a tile's edge would otherwise get a box that runs outside
+        the image - PIL's crop() doesn't error on that, it just pads the
+        out-of-bounds area with black, so this failed silently. For a building
+        within half a patch-size of the edge (common - xBD tiles are 1024x1024
+        and this default patch_size is 224, so anything within 112px of any
+        edge is affected), that can mean 60-70%+ of the "building" patch is
+        black filler rather than actual imagery, which would starve the model
+        of real signal for exactly the buildings it's being trained to judge.
+
+        Fix: shift the box to stay fully inside the image bounds (as long as
+        the image is at least patch_size in both dimensions, which holds for
+        xBD's 1024x1024 tiles), rather than clipping/padding.
+        """
         cx, cy = centroid
         half = self.patch_size // 2
         img_w, img_h = image.size
 
         left = cx - half
         top = cy - half
+
+        # Shift right/down if the box would start before the image...
         left = max(left, 0)
         top = max(top, 0)
+        # ...and shift left/up if it would run past the far edge.
         left = min(left, img_w - self.patch_size)
         top = min(top, img_h - self.patch_size)
 
@@ -109,6 +147,14 @@ class XBDDamageDataset(Dataset):
 
 
 class SARFloodDataset(Dataset):
+    """
+    Loads (sar_image, flood_mask) pairs for flood extent segmentation.
+
+    Expects preprocessed GeoTIFFs:
+        processed/sar/<id>.tif        - 2-band (VV, VH) SAR image
+        processed/masks/<id>.tif      - 1-band binary flood mask
+    """
+
     def __init__(self, sar_dir: str, mask_dir: str, patch_size: int = 256):
         self.sar_dir = sar_dir
         self.mask_dir = mask_dir
@@ -120,11 +166,17 @@ class SARFloodDataset(Dataset):
 
     def __getitem__(self, idx):
         sample_id = self.ids[idx]
+
         with rasterio.open(os.path.join(self.sar_dir, f"{sample_id}.tif")) as src:
-            sar = src.read().astype(np.float32)
+            sar = src.read().astype(np.float32)  # shape: (2, H, W)
+
         with rasterio.open(os.path.join(self.mask_dir, f"{sample_id}.tif")) as src:
-            mask = src.read(1).astype(np.float32)
+            mask = src.read(1).astype(np.float32)  # shape: (H, W)
+
+        # Normalize SAR backscatter values (dB scale typically ranges roughly -25 to 0)
         sar = np.clip((sar + 25) / 25, 0, 1)
+
         sar_tensor = torch.from_numpy(sar)
-        mask_tensor = torch.from_numpy(mask).unsqueeze(0)
+        mask_tensor = torch.from_numpy(mask).unsqueeze(0)  # add channel dim
+
         return sar_tensor, mask_tensor
