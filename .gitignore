@@ -9,3 +9,13 @@ __pycache__/
 .env
 *.egg-info/
 best_model.pt
+venv/
+.venv/
+data/raw/
+data/processed/
+*.pt
+*.pth
+samples/
+backend/tmp/
+__pycache__/
+.env
