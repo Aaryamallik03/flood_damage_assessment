@@ -32,6 +32,7 @@ mimetypes.add_type("image/svg+xml", ".svg")
 ROOT = Path(__file__).resolve().parent.parent
 WEB_DIR = ROOT / "web"
 MODELS_DIR = ROOT / "backend" / "models_store"
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 SUFFIXES = {"image/png": ".png", "image/jpeg": ".jpg", "image/tiff": ".tif"}
 
 with open(ROOT / "configs" / "config.yaml") as f:
@@ -73,7 +74,7 @@ app = FastAPI(title="Flood Damage Assessment API", version="0.2.0", lifespan=lif
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten this before anything beyond local demo use
+    allow_origins=[o for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -112,6 +113,8 @@ async def predict_damage(pre_image: UploadFile = File(...), post_image: UploadFi
     for upload in (pre_image, post_image):
         if upload.content_type not in SUFFIXES:
             raise HTTPException(400, f"{upload.filename}: upload a PNG, JPEG or TIFF image.")
+        if upload.size and upload.size > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, "Each image must be under 10 MB.")
 
     with tempfile.TemporaryDirectory() as tmp:
         paths = []
