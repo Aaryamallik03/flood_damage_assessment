@@ -19,6 +19,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import yaml
+from huggingface_hub import hf_hub_download
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -32,6 +33,14 @@ mimetypes.add_type("image/svg+xml", ".svg")
 ROOT = Path(__file__).resolve().parent.parent
 WEB_DIR = ROOT / "web"
 MODELS_DIR = ROOT / "backend" / "models_store"
+HF_REPO_ID = os.environ.get(
+    "HF_REPO_ID",
+    "Aaryaaaaaa/flood_damage_assessment",
+)
+HF_FILENAME = os.environ.get(
+    "HF_FILENAME",
+    "damage_classifier.pt",
+)
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 SUFFIXES = {"image/png": ".png", "image/jpeg": ".jpg", "image/tiff": ".tif"}
 
@@ -53,11 +62,27 @@ def find_checkpoint():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global damage_predictor, load_error
+
     checkpoint, candidates = find_checkpoint()
+
     if checkpoint is None:
-        load_error = "No checkpoint found. Looked in: " + ", ".join(str(c) for c in candidates)
-        print(load_error)
-    else:
+        try:
+            MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+            downloaded = hf_hub_download(
+                repo_id=HF_REPO_ID,
+                filename=HF_FILENAME,
+                local_dir=str(MODELS_DIR),
+            )
+
+            checkpoint = Path(downloaded)
+            print(f"Downloaded damage classifier from Hugging Face to {checkpoint}.")
+
+        except Exception as exc:
+            load_error = f"Could not download model from Hugging Face: {exc}"
+            print(load_error)
+
+    if checkpoint is not None and checkpoint.exists():
         try:
             damage_predictor = DamagePredictor(
                 checkpoint_path=str(checkpoint),
@@ -67,8 +92,8 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             load_error = f"Could not load {checkpoint}: {exc}"
             print(load_error)
-    yield
 
+    yield
 
 app = FastAPI(title="Flood Damage Assessment API", version="0.2.0", lifespan=lifespan)
 

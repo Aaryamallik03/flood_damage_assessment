@@ -1,0 +1,11 @@
+.git
+.gitignore
+venv/
+.venv/
+/data/
+/samples/
+__pycache__/
+*.pyc
+backend/tmp/
+backend/main_old.py
+makes_sample.py
