@@ -1,7 +1,6 @@
-﻿# ðŸŒŠ Flood Damage Assessment Using Deep Learning
+# 🌊 Flood Damage Assessment Using Deep Learning
 
 **Live demo:** https://aaryamallik03.github.io/flood_damage_assessment/ (runs in your browser, nothing is uploaded)
-
 
 An end-to-end deep learning project for assessing disaster impact from satellite and aerial imagery. The system combines **building-level damage classification** from pre- and post-disaster imagery with **flood extent segmentation** using SAR data.
 
@@ -9,7 +8,7 @@ The project is designed to support rapid post-disaster assessment by automatical
 
 ---
 
-## ðŸš€ Project Overview
+## 🚀 Project Overview
 
 Natural disasters such as floods can damage buildings and infrastructure across large geographic areas. Manual assessment is time-consuming and difficult, especially when affected regions are difficult to access.
 
@@ -19,8 +18,8 @@ This project explores how deep learning and remote-sensing imagery can automate 
 
 | Component                         | Input                       | Output            | Approach                |
 | --------------------------------- | --------------------------- | ----------------- | ----------------------- |
-| ðŸ  Building Damage Classification | Pre- & post-disaster images | Damage severity   | Siamese CNN + ResNet-50 |
-| ðŸŒŠ Flood Extent Segmentation      | SAR imagery                 | Flooded-area mask | Semantic segmentation   |
+| 🏠 Building Damage Classification | Pre- & post-disaster images | Damage severity   | Siamese CNN + ResNet-50 |
+| 🌊 Flood Extent Segmentation      | SAR imagery                 | Flooded-area mask | Semantic segmentation   |
 
 ### Building damage classes
 
@@ -33,7 +32,7 @@ The damage classifier predicts four xBD-style categories:
 
 ---
 
-## ðŸ§  System Architecture
+## 🧠 System Architecture
 
 ### 1. Building Damage Classification
 
@@ -43,40 +42,40 @@ Two corresponding image patches are processed:
 
 ```text
              Pre-disaster image
-                    â”‚
-                    â–¼
-              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-              â”‚ ResNet-50 â”‚
-              â””â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”˜
-                    â”‚
-                    â–¼
+                    │
+                    ▼
+              ┌───────────┐
+              │ ResNet-50 │
+              └─────┬─────┘
+                    │
+                    ▼
               Feature Vector
-                    â”‚
-                    â”‚
-                    â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                    â”‚              â”‚
-                    â–¼              â–¼
-              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-              â”‚ Feature Concatenation  â”‚
-              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                           â”‚
-                           â–¼
+                    │
+                    │
+                    ├──────────────┐
+                    │              │
+                    ▼              ▼
+              ┌────────────────────────┐
+              │ Feature Concatenation  │
+              └────────────┬───────────┘
+                           │
+                           ▼
                     Classification
-                           â”‚
-                           â–¼
-        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-        â”‚ No / Minor / Major / Destroyed â”‚
-        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                           â–²
-                           â”‚
+                           │
+                           ▼
+        ┌────────────────────────────────┐
+        │ No / Minor / Major / Destroyed │
+        └────────────────────────────────┘
+                           ▲
+                           │
                     Feature Vector
-                           â–²
-                           â”‚
-              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-              â”‚ ResNet-50  â”‚
-              â””â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜
-                    â”‚
-                    â–¼
+                           ▲
+                           │
+              ┌────────────┐
+              │ ResNet-50  │
+              └─────┬──────┘
+                    │
+                    ▼
              Post-disaster image
 ```
 
@@ -84,7 +83,7 @@ The two branches share the same encoder weights, allowing the network to learn r
 
 ---
 
-## ðŸŒŠ 2. Flood Extent Segmentation
+## 🌊 2. Flood Extent Segmentation
 
 The second component works with **Synthetic Aperture Radar (SAR)** imagery.
 
@@ -94,23 +93,23 @@ The segmentation pipeline processes SAR data and produces a pixel-level flood ma
 
 ```text
 SAR Image
-    â”‚
-    â–¼
+    │
+    ▼
 Preprocessing
-    â”‚
-    â–¼
+    │
+    ▼
 Segmentation Model
-    â”‚
-    â–¼
+    │
+    ▼
 Flood Probability / Mask
-    â”‚
-    â–¼
+    │
+    ▼
 Flooded Area Map
 ```
 
 ---
 
-## ðŸ“Š Dataset
+## 📊 Dataset
 
 The building damage component uses the **xBD/xView2 disaster-damage dataset**.
 
@@ -134,7 +133,7 @@ The dataset is imbalanced, with destroyed buildings representing the smallest cl
 
 ---
 
-## âš™ï¸ Preprocessing
+## ⚙️ Preprocessing
 
 For each building annotation:
 
@@ -142,7 +141,7 @@ For each building annotation:
 2. The building centroid is calculated.
 3. A corresponding patch is extracted from the pre-disaster image.
 4. The same spatial region is extracted from the post-disaster image.
-5. Images are resized to **224 Ã— 224**.
+5. Images are resized to **224 × 224**.
 6. Images are converted to tensors.
 7. ImageNet normalization is applied.
 
@@ -150,7 +149,7 @@ The same spatial location is therefore compared before and after the disaster.
 
 ---
 
-## ðŸ—ï¸ Model
+## 🏗️ Model
 
 ### Siamese ResNet-50
 
@@ -168,34 +167,34 @@ The damage classification model consists of:
 
 ```text
 2048 + 2048 features
-        â”‚
-        â–¼
+        │
+        ▼
      Linear
-      4096 â†’ 512
-        â”‚
+      4096 → 512
+        │
        ReLU
-        â”‚
+        │
      Dropout
-        â”‚
-        â–¼
+        │
+        ▼
      Linear
-       512 â†’ 128
-        â”‚
+       512 → 128
+        │
        ReLU
-        â”‚
+        │
      Dropout
-        â”‚
-        â–¼
+        │
+        ▼
      Linear
-       128 â†’ 4
-        â”‚
-        â–¼
+       128 → 4
+        │
+        ▼
 Damage Class
 ```
 
 ---
 
-## ðŸ“ˆ Model Evaluation
+## 📈 Model Evaluation
 
 A **2,000-sample stratified diagnostic evaluation** was performed using 500 samples from each damage category.
 
@@ -234,7 +233,7 @@ The most notable error pattern is confusion involving the **destroyed** class, w
 
 ---
 
-## ðŸ§ª Example Inference
+## 🧪 Example Inference
 
 The trained checkpoint can be loaded with the inference pipeline:
 
@@ -270,49 +269,49 @@ Example output:
 
 ---
 
-## ðŸ—‚ï¸ Project Structure
+## 🗂️ Project Structure
 
 ```text
 flood-damage-assessment/
-â”‚
-â”œâ”€â”€ backend/
-â”‚   â””â”€â”€ main.py
-â”‚
-â”œâ”€â”€ configs/
-â”‚   â””â”€â”€ config.yaml
-â”‚
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ data/
-â”‚   â”‚   â”œâ”€â”€ bipad_client.py
-â”‚   â”‚   â”œâ”€â”€ download_sentinel*.py
-â”‚   â”‚   â”œâ”€â”€ download_xbd.py
-â”‚   â”‚   â”œâ”€â”€ ndrrma_sitre*.py
-â”‚   â”‚   â””â”€â”€ preprocessing.py
-â”‚   â”‚
-â”‚   â”œâ”€â”€ inference/
-â”‚   â”‚   â””â”€â”€ predict.py
-â”‚   â”‚
-â”‚   â”œâ”€â”€ models/
-â”‚   â”‚   â”œâ”€â”€ damage_classifier.py
-â”‚   â”‚   â””â”€â”€ flood_segmentation.py
-â”‚   â”‚
-â”‚   â”œâ”€â”€ train/
-â”‚   â”‚   â”œâ”€â”€ train_damage_classifier.py
-â”‚   â”‚   â””â”€â”€ train_segmentation*.py
-â”‚   â”‚
-â”‚   â””â”€â”€ utils/
-â”‚       â””â”€â”€ metrics.py
-â”‚
-â”œâ”€â”€ tests/
-â”‚
-â”œâ”€â”€ evaluate_model.py
-â”œâ”€â”€ requirements.txt
-â””â”€â”€ README.md
+│
+├── backend/
+│   └── main.py
+│
+├── configs/
+│   └── config.yaml
+│
+├── src/
+│   ├── data/
+│   │   ├── bipad_client.py
+│   │   ├── download_sentinel*.py
+│   │   ├── download_xbd.py
+│   │   ├── ndrrma_sitre*.py
+│   │   └── preprocessing.py
+│   │
+│   ├── inference/
+│   │   └── predict.py
+│   │
+│   ├── models/
+│   │   ├── damage_classifier.py
+│   │   └── flood_segmentation.py
+│   │
+│   ├── train/
+│   │   ├── train_damage_classifier.py
+│   │   └── train_segmentation*.py
+│   │
+│   └── utils/
+│       └── metrics.py
+│
+├── tests/
+│
+├── evaluate_model.py
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-## ðŸ› ï¸ Tech Stack
+## 🛠️ Tech Stack
 
 **Programming**
 
@@ -346,7 +345,7 @@ flood-damage-assessment/
 
 ---
 
-## ðŸ’» Installation
+## 💻 Installation
 
 Clone the repository:
 
@@ -379,7 +378,7 @@ pip install -r requirements.txt
 
 ---
 
-## â–¶ï¸ Running the Project
+## ▶️ Running the Project
 
 ### Train the damage classifier
 
@@ -410,7 +409,7 @@ print(result)
 
 ---
 
-## ðŸ“¦ Model Checkpoint
+## 📦 Model Checkpoint
 
 The trained `best_model.pt` checkpoint is approximately **98 MB** and is intentionally not stored directly in the Git repository.
 
@@ -420,7 +419,7 @@ For reproducibility, the trained checkpoint can be distributed separately or thr
 
 ---
 
-## ðŸ”¬ Current Limitations
+## 🔬 Current Limitations
 
 This project is still under development.
 
@@ -435,7 +434,7 @@ Important limitations include:
 
 ---
 
-## ðŸš§ Future Improvements
+## 🚧 Future Improvements
 
 Planned improvements include:
 
@@ -453,7 +452,7 @@ Planned improvements include:
 
 ---
 
-## ðŸŽ¯ Project Goal
+## 🎯 Project Goal
 
 The long-term goal is to develop a practical **AI-assisted disaster assessment pipeline** capable of combining multiple sources of remote-sensing data to provide rapid information about:
 
@@ -467,7 +466,7 @@ This can help demonstrate how computer vision, deep learning, and geospatial dat
 
 ---
 
-## ðŸ‘©â€ðŸ’» Author
+## 👩‍💻 Author
 
 **Aarya Mallik**
 
@@ -478,8 +477,8 @@ Interested in **Data Science, Machine Learning, Computer Vision, and AI for real
 
 ---
 
-## â­ Acknowledgements
+## ⭐ Acknowledgements
 
 This project builds upon publicly available disaster-imagery and remote-sensing datasets and open-source deep learning tools.
 
-If you find the project useful, consider â­ starring the repository.
+If you find the project useful, consider ⭐ starring the repository.
