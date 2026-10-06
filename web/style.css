@@ -356,6 +356,14 @@ header nav a:hover{
   color:var(--mute);
 }
 
+.file-name{
+  max-width:260px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:12px;
+}
+
 .drop .tag{
   position:absolute;
   left:0;
@@ -431,6 +439,13 @@ button.ghost:hover:not(:disabled){
 
 .hint strong{
   color:var(--ink);
+}
+
+.api-note{
+  color:#777;
+  font-size:13px;
+  margin:9px 0 0;
+  max-width:780px;
 }
 
 
@@ -1202,10 +1217,6 @@ footer p{
     height:10px;
   }
 
-  table{
-    min-width:520px;
-  }
-
 }
 
 
@@ -1238,7 +1249,9 @@ footer p{
   }
 
   *,
+
   *::before,
+
   *::after{
     transition:none!important;
     animation:none!important;
