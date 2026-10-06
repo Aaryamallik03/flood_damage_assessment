@@ -11,6 +11,8 @@
     content="Deep learning prototype for building damage classification from pre- and post-disaster imagery using a Siamese ResNet-50."
   >
 
+  <meta name="theme-color" content="#ffffff">
+
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
 </head>
@@ -20,7 +22,9 @@
 <header>
   <div class="wrap header-inner">
 
-    <a class="brand" href="./">Flood Damage Assessment</a>
+    <a class="brand" href="./">
+      Flood Damage Assessment
+    </a>
 
     <nav aria-label="Main navigation">
       <a href="#how">Method</a>
@@ -28,11 +32,14 @@
       <a href="#results">Results</a>
       <a href="#nepal">Nepal</a>
       <a href="#limits">Limitations</a>
+
       <a
         href="https://github.com/Aaryamallik03/flood_damage_assessment"
         target="_blank"
         rel="noopener noreferrer"
-      >GitHub ↗</a>
+      >
+        GitHub ↗
+      </a>
     </nav>
 
   </div>
@@ -56,7 +63,7 @@
     <p class="lead">
       A Siamese ResNet-50 model compares corresponding pre- and post-disaster
       building imagery and classifies damage as no damage, minor, major, or
-      destroyed. This research prototype was trained on xBD flood imagery
+      destroyed. The model was trained on xBD flood imagery in Google Colab
       and has not yet been independently validated on Nepal flood imagery.
     </p>
 
@@ -64,12 +71,14 @@
       <span>PyTorch</span>
       <span>ResNet-50</span>
       <span>Computer Vision</span>
+      <span>Google Colab</span>
       <span>FastAPI</span>
       <span>Docker</span>
       <span>Cloud Run</span>
     </div>
 
     <div class="hero-links">
+
       <a class="primary-link" href="#demo">
         Try the classifier ↓
       </a>
@@ -82,6 +91,7 @@
       >
         View source on GitHub ↗
       </a>
+
     </div>
 
   </section>
@@ -96,13 +106,22 @@
       <div class="toolhead">
 
         <div>
-          <span class="section-kicker">LIVE INFERENCE</span>
-          <strong>Building damage classifier</strong>
+          <span class="section-kicker">
+            INFERENCE DEMO
+          </span>
+
+          <strong>
+            Building damage classifier
+          </strong>
         </div>
 
-        <div class="status" role="status" aria-live="polite">
+        <div
+          class="status"
+          role="status"
+          aria-live="polite"
+        >
           <span class="dot" id="dot"></span>
-          <span id="stat">Checking model</span>
+          <span id="stat">Checking inference API</span>
         </div>
 
       </div>
@@ -115,18 +134,33 @@
           id="dpre"
           data-cursor="Add before image"
         >
-          <span class="tag">Before</span>
+
+          <span class="tag">
+            Before
+          </span>
 
           <span class="drop-copy">
-            <strong>Pre-flood image</strong>
-            <small>Drop or choose an image</small>
+            <strong>
+              Pre-flood image
+            </strong>
+
+            <small>
+              Drop or choose an image
+            </small>
+
+            <small
+              class="file-name"
+              id="pre-name"
+            ></small>
           </span>
 
           <input
             type="file"
             accept="image/png,image/jpeg,image/jpg,image/tiff"
             id="fpre"
+            aria-label="Choose pre-flood image"
           >
+
         </label>
 
 
@@ -135,18 +169,33 @@
           id="dpost"
           data-cursor="Add after image"
         >
-          <span class="tag">After</span>
+
+          <span class="tag">
+            After
+          </span>
 
           <span class="drop-copy">
-            <strong>Post-flood image</strong>
-            <small>Drop or choose an image</small>
+            <strong>
+              Post-flood image
+            </strong>
+
+            <small>
+              Drop or choose an image
+            </small>
+
+            <small
+              class="file-name"
+              id="post-name"
+            ></small>
           </span>
 
           <input
             type="file"
             accept="image/png,image/jpeg,image/jpg,image/tiff"
             id="fpost"
+            aria-label="Choose post-flood image"
           >
+
         </label>
 
       </div>
@@ -154,7 +203,11 @@
 
       <div class="actions">
 
-        <button id="go" type="button" disabled>
+        <button
+          id="go"
+          type="button"
+          disabled
+        >
           Assess damage
         </button>
 
@@ -170,16 +223,34 @@
 
 
       <p class="hint">
+
         <strong>For reliable results:</strong>
+
         use matching crops containing one building from the same location
         before and after the flood. The model was trained on
         224 × 224 building-centered crops, so whole-scene images may produce
         unreliable predictions.
-        <a href="./privacy.html">Privacy policy</a>.
+
+        <a href="./privacy.html">
+          Privacy policy
+        </a>
+
       </p>
 
 
-      <div id="result" aria-live="polite"></div>
+      <p
+        class="api-note"
+        id="api-note"
+      >
+        The public demo requires the FastAPI inference service to be deployed
+        and connected to this website.
+      </p>
+
+
+      <div
+        id="result"
+        aria-live="polite"
+      ></div>
 
     </div>
 
@@ -236,6 +307,7 @@
 
         <div class="arch-join">
           <span>+</span>
+
           <small>
             Feature<br>
             concatenation
@@ -267,8 +339,15 @@
 
 
         <div class="arch-head">
-          <span>4096 → 512 → 128 → 4</span>
-          <small>Classification head</small>
+
+          <span>
+            4096 → 512 → 128 → 4
+          </span>
+
+          <small>
+            Classification head
+          </small>
+
         </div>
 
 
@@ -307,6 +386,7 @@
       <div class="note">
 
         <strong>Second component:</strong>
+
         a SAR-based flood extent segmentation pipeline is also under
         development. It is not yet evaluated on a properly held-out dataset.
 
@@ -331,8 +411,8 @@
 
       <p>
         The trained PyTorch classifier is exposed through a FastAPI
-        inference service. The backend is containerized with Docker and
-        deployed separately from this static portfolio interface.
+        inference service. The backend is containerized with Docker
+        and deployed separately from this static GitHub Pages interface.
       </p>
 
 
@@ -341,23 +421,33 @@
         aria-label="Application inference pipeline"
       >
 
-        <div class="pipeline-box">Web UI</div>
+        <div class="pipeline-box">
+          Web UI
+        </div>
 
         <span>→</span>
 
-        <div class="pipeline-box">Cloud Run</div>
+        <div class="pipeline-box">
+          Cloud Run
+        </div>
 
         <span>→</span>
 
-        <div class="pipeline-box">FastAPI</div>
+        <div class="pipeline-box">
+          FastAPI
+        </div>
 
         <span>→</span>
 
-        <div class="pipeline-box">DamagePredictor</div>
+        <div class="pipeline-box">
+          DamagePredictor
+        </div>
 
         <span>→</span>
 
-        <div class="pipeline-box">Siamese ResNet-50</div>
+        <div class="pipeline-box">
+          Siamese ResNet-50
+        </div>
 
       </div>
 
@@ -365,8 +455,30 @@
       <div class="engineering-grid">
 
         <div>
-          <span class="mini-label">MODEL</span>
-          <strong>PyTorch / Torchvision</strong>
+          <span class="mini-label">
+            TRAINING
+          </span>
+
+          <strong>
+            Google Colab
+          </strong>
+
+          <p>
+            Model training and experimentation were performed in
+            Google Colab using the xBD flood imagery.
+          </p>
+        </div>
+
+
+        <div>
+          <span class="mini-label">
+            MODEL
+          </span>
+
+          <strong>
+            PyTorch / Torchvision
+          </strong>
+
           <p>
             Shared ResNet-50 encoder with a four-class classification head.
           </p>
@@ -374,17 +486,30 @@
 
 
         <div>
-          <span class="mini-label">API</span>
-          <strong>FastAPI</strong>
+          <span class="mini-label">
+            API
+          </span>
+
+          <strong>
+            FastAPI
+          </strong>
+
           <p>
-            Accepts a pre/post image pair and returns class probabilities.
+            Accepts a pre/post image pair and returns damage class
+            probabilities.
           </p>
         </div>
 
 
         <div>
-          <span class="mini-label">DEPLOYMENT</span>
-          <strong>Docker / Cloud Run</strong>
+          <span class="mini-label">
+            DEPLOYMENT
+          </span>
+
+          <strong>
+            Docker / Cloud Run
+          </strong>
+
           <p>
             Containerized inference service designed for cloud deployment.
           </p>
@@ -392,11 +517,33 @@
 
 
         <div>
-          <span class="mini-label">REPOSITORY</span>
-          <strong>Git + GitHub</strong>
+          <span class="mini-label">
+            REPOSITORY
+          </span>
+
+          <strong>
+            Git + GitHub
+          </strong>
+
           <p>
             Source code, training pipeline, evaluation, tests and
             documentation.
+          </p>
+        </div>
+
+
+        <div>
+          <span class="mini-label">
+            FRONTEND
+          </span>
+
+          <strong>
+            HTML / CSS / JavaScript
+          </strong>
+
+          <p>
+            Static portfolio interface hosted independently from the
+            inference backend.
           </p>
         </div>
 
@@ -446,7 +593,9 @@
 
       <div class="note warning">
 
-        <strong>Important evaluation caveat:</strong>
+        <strong>
+          Important evaluation caveat:
+        </strong>
 
         These results are diagnostic rather than an independent test score.
         The 2,000 evaluated samples come from the same overall dataset used
@@ -469,13 +618,16 @@
         <table>
 
           <thead>
+
             <tr>
               <th>Class</th>
               <th>Precision</th>
               <th>Recall</th>
               <th>F1</th>
             </tr>
+
           </thead>
+
 
           <tbody>
 
@@ -681,15 +833,17 @@
 
 
       <p>
-        The August 2026 Nepal flood event provides a relevant real-world
-        setting for investigating whether a model trained on xBD imagery
-        can generalize to a different geographic and disaster distribution.
+        A future Nepal-focused evaluation can investigate whether a model
+        trained on xBD imagery generalizes to different geographic,
+        architectural and disaster conditions.
       </p>
 
 
       <div class="note">
 
-        <strong>Generalization warning:</strong>
+        <strong>
+          Generalization warning:
+        </strong>
 
         The classifier was trained on other flood events in xBD.
         Nepal imagery may differ in geography, building structure,
@@ -876,7 +1030,11 @@
 
 <!-- CLOSING BAND -->
 
-<div class="band" id="band" aria-hidden="true">
+<div
+  class="band"
+  id="band"
+  aria-hidden="true"
+>
 
   <div class="row">
     <span>
@@ -971,17 +1129,21 @@ const $ = id => document.getElementById(id);
 
 
 /*
-  IMPORTANT:
-  If your frontend is on GitHub Pages and your FastAPI backend
-  is deployed on Cloud Run, replace the empty string below with
-  your Cloud Run service URL.
+  ============================================================
+  API CONNECTION
+  ============================================================
+
+  Your model was trained in Google Colab.
+
+  Your FastAPI backend will be deployed separately.
+
+  AFTER the backend is deployed, put its URL here.
 
   Example:
+
   const API_BASE = "https://your-service-xxxxx-uc.a.run.app";
 
-  If the frontend and API are served by the same FastAPI application,
-  leave it as:
-  const API_BASE = "";
+  For now, leave it empty.
 */
 
 const API_BASE = "";
@@ -993,11 +1155,9 @@ const files = {
 };
 
 
-const COLORS = {
-  "no-damage": "var(--c0)",
-  "minor-damage": "var(--c1)",
-  "major-damage": "var(--c2)",
-  "destroyed": "var(--c3)"
+const objectUrls = {
+  pre: null,
+  post: null
 };
 
 
@@ -1006,6 +1166,14 @@ const LABELS = {
   "minor-damage": "Minor damage",
   "major-damage": "Major damage",
   "destroyed": "Destroyed"
+};
+
+
+const COLORS = {
+  "no-damage": "var(--c0)",
+  "minor-damage": "var(--c1)",
+  "major-damage": "var(--c2)",
+  "destroyed": "var(--c3)"
 };
 
 
@@ -1018,15 +1186,45 @@ function apiUrl(path) {
 
 
 function refresh() {
+
   $("go").disabled = !(
     modelReady &&
     files.pre &&
     files.post
   );
+
+}
+
+
+function setStatus(text, state) {
+
+  $("stat").textContent = text;
+
+  $("dot").className = `dot ${state}`;
+
 }
 
 
 async function checkHealth() {
+
+  if (!API_BASE) {
+
+    modelReady = false;
+
+    setStatus(
+      "API not connected",
+      "off"
+    );
+
+    $("api-note").textContent =
+      "The inference demo is waiting for the FastAPI backend to be deployed and connected.";
+
+    refresh();
+
+    return;
+
+  }
+
 
   try {
 
@@ -1042,7 +1240,7 @@ async function checkHealth() {
 
 
     if (!response.ok) {
-      throw new Error("Health check failed");
+      throw new Error("Health check failed.");
     }
 
 
@@ -1054,23 +1252,40 @@ async function checkHealth() {
     );
 
 
-    $("dot").className =
-      "dot " + (modelReady ? "on" : "off");
+    if (modelReady) {
 
+      setStatus(
+        "Model ready",
+        "on"
+      );
 
-    $("stat").textContent = modelReady
-      ? "Model ready"
-      : "Model unavailable";
+      $("api-note").textContent =
+        "Inference API connected. Upload a matching pre/post building pair to run the classifier.";
+
+    } else {
+
+      setStatus(
+        "Model unavailable",
+        "off"
+      );
+
+      $("api-note").textContent =
+        "The API is reachable, but the damage model is not loaded.";
+
+    }
 
 
   } catch (error) {
 
     modelReady = false;
 
-    $("dot").className = "dot off";
+    setStatus(
+      "Inference API unavailable",
+      "off"
+    );
 
-    $("stat").textContent =
-      "Inference API unavailable";
+    $("api-note").textContent =
+      "The website could not connect to the inference API.";
 
   }
 
@@ -1080,7 +1295,46 @@ async function checkHealth() {
 }
 
 
-function setup(key, input, box) {
+function clearPreview(key, box) {
+
+  if (objectUrls[key]) {
+
+    URL.revokeObjectURL(
+      objectUrls[key]
+    );
+
+    objectUrls[key] = null;
+
+  }
+
+
+  box
+    .querySelector("img")
+    ?.remove();
+
+}
+
+
+function showError(message) {
+
+  const output = $("result");
+
+  output.className = "show";
+
+  output.innerHTML = "";
+
+  const error = document.createElement("p");
+
+  error.className = "err";
+
+  error.textContent = message;
+
+  output.appendChild(error);
+
+}
+
+
+function setup(key, input, box, nameElement) {
 
   const setFile = file => {
 
@@ -1089,27 +1343,51 @@ function setup(key, input, box) {
     }
 
 
-    if (!file.type.startsWith("image/")) {
+    if (
+      !file.type ||
+      !file.type.startsWith("image/")
+    ) {
 
-      $("result").className = "show";
-
-      $("result").innerHTML = `
-        <p class="err">
-          Please choose a valid image file.
-        </p>
-      `;
+      showError(
+        "Please choose a valid image file."
+      );
 
       return;
+
+    }
+
+
+    const maxSize =
+      15 * 1024 * 1024;
+
+
+    if (file.size > maxSize) {
+
+      showError(
+        "Please choose an image smaller than 15 MB."
+      );
+
+      return;
+
     }
 
 
     files[key] = file;
 
 
-    box.querySelector("img")?.remove();
+    clearPreview(
+      key,
+      box
+    );
 
 
-    const image = document.createElement("img");
+    objectUrls[key] =
+      URL.createObjectURL(file);
+
+
+    const image =
+      document.createElement("img");
+
 
     image.alt =
       key === "pre"
@@ -1117,13 +1395,15 @@ function setup(key, input, box) {
         : "Uploaded post-flood building image";
 
 
-    image.src = URL.createObjectURL(file);
+    image.src =
+      objectUrls[key];
 
 
     box.appendChild(image);
 
 
-    const copy = box.querySelector(".drop-copy");
+    const copy =
+      box.querySelector(".drop-copy");
 
 
     if (copy) {
@@ -1131,45 +1411,59 @@ function setup(key, input, box) {
     }
 
 
+    nameElement.textContent =
+      file.name;
+
+
     refresh();
 
   };
 
 
-  input.addEventListener("change", () => {
-
-    setFile(input.files[0]);
-
-  });
-
-
-  box.addEventListener("dragover", event => {
-
-    event.preventDefault();
-
-    box.classList.add("over");
-
-  });
+  input.addEventListener(
+    "change",
+    () => {
+      setFile(input.files[0]);
+    }
+  );
 
 
-  box.addEventListener("dragleave", () => {
+  box.addEventListener(
+    "dragover",
+    event => {
 
-    box.classList.remove("over");
+      event.preventDefault();
 
-  });
+      box.classList.add("over");
+
+    }
+  );
 
 
-  box.addEventListener("drop", event => {
+  box.addEventListener(
+    "dragleave",
+    () => {
 
-    event.preventDefault();
+      box.classList.remove("over");
 
-    box.classList.remove("over");
+    }
+  );
 
-    setFile(
-      event.dataTransfer.files[0]
-    );
 
-  });
+  box.addEventListener(
+    "drop",
+    event => {
+
+      event.preventDefault();
+
+      box.classList.remove("over");
+
+      setFile(
+        event.dataTransfer.files[0]
+      );
+
+    }
+  );
 
 }
 
@@ -1177,14 +1471,16 @@ function setup(key, input, box) {
 setup(
   "pre",
   $("fpre"),
-  $("dpre")
+  $("dpre"),
+  $("pre-name")
 );
 
 
 setup(
   "post",
   $("fpost"),
-  $("dpost")
+  $("dpost"),
+  $("post-name")
 );
 
 
@@ -1196,9 +1492,24 @@ $("reset").addEventListener(
     files.post = null;
 
 
-    document
-      .querySelectorAll(".drop img")
-      .forEach(image => image.remove());
+    clearPreview(
+      "pre",
+      $("dpre")
+    );
+
+
+    clearPreview(
+      "post",
+      $("dpost")
+    );
+
+
+    $("pre-name").textContent = "";
+    $("post-name").textContent = "";
+
+
+    $("fpre").value = "";
+    $("fpost").value = "";
 
 
     document
@@ -1206,10 +1517,6 @@ $("reset").addEventListener(
       .forEach(copy => {
         copy.style.opacity = "1";
       });
-
-
-    $("fpre").value = "";
-    $("fpost").value = "";
 
 
     $("result").className = "";
@@ -1226,12 +1533,17 @@ $("go").addEventListener(
   "click",
   async () => {
 
-    if (!files.pre || !files.post) {
+    if (
+      !modelReady ||
+      !files.pre ||
+      !files.post
+    ) {
       return;
     }
 
 
-    const output = $("result");
+    const output =
+      $("result");
 
 
     output.className =
@@ -1267,32 +1579,39 @@ $("go").addEventListener(
 
     try {
 
-      const response = await fetch(
-        apiUrl("/predict/damage"),
-        {
-          method: "POST",
-          body: formData
-        }
-      );
+      const response =
+        await fetch(
+          apiUrl("/predict/damage"),
+          {
+            method: "POST",
+            body: formData
+          }
+        );
 
 
       let data;
 
 
       try {
-        data = await response.json();
+
+        data =
+          await response.json();
+
       } catch {
+
         throw new Error(
           "The inference server returned an invalid response."
         );
+
       }
 
 
       if (!response.ok) {
 
         throw new Error(
-          data.detail ||
-          "Prediction request failed."
+          typeof data.detail === "string"
+            ? data.detail
+            : "Prediction request failed."
         );
 
       }
@@ -1324,89 +1643,159 @@ $("go").addEventListener(
               );
 
 
-            return `
-              <div class="bar">
-
-                <span>
-                  ${LABELS[key] || key}
-                </span>
-
-                <div class="track">
-
-                  <div
-                    class="fill"
-                    data-w="${(
-                      probability * 100
-                    ).toFixed(1)}"
-                    style="background:${
-                      COLORS[key] ||
-                      "var(--ink)"
-                    }"
-                  ></div>
-
-                </div>
-
-                <span>
-                  ${(
-                    probability * 100
-                  ).toFixed(1)}%
-                </span>
-
-              </div>
-            `;
-
-          })
-          .join("");
+            const row =
+              document.createElement("div");
 
 
-      output.innerHTML = `
-
-        <div class="result-heading">
-
-          <span class="section-kicker">
-            MODEL OUTPUT
-          </span>
-
-          <div class="verdict">
-
-            <h3
-              style="
-                color:${
-                  COLORS[predictedClass] ||
-                  "var(--ink)"
-                }
-              "
-            >
-              ${
-                LABELS[predictedClass] ||
-                predictedClass
-              }
-            </h3>
-
-            <span>
-              ${(
-                confidence * 100
-              ).toFixed(1)}% model confidence
-            </span>
-
-          </div>
-
-        </div>
+            row.className = "bar";
 
 
-        <p class="result-note">
-          Classification based on the submitted
-          pre- and post-flood building crops.
-          Model confidence is not the same as
-          calibrated certainty.
-        </p>
+            const label =
+              document.createElement("span");
 
 
-        <div class="bars">
-          ${bars}
-        </div>
+            label.textContent =
+              LABELS[key] || key;
 
-      `;
+
+            const track =
+              document.createElement("div");
+
+
+            track.className = "track";
+
+
+            const fill =
+              document.createElement("div");
+
+
+            fill.className = "fill";
+
+            fill.dataset.w =
+              (
+                probability * 100
+              ).toFixed(1);
+
+
+            fill.style.background =
+              COLORS[key] ||
+              "var(--ink)";
+
+
+            const valueText =
+              document.createElement("span");
+
+
+            valueText.textContent =
+              `${(
+                probability * 100
+              ).toFixed(1)}%`;
+
+
+            track.appendChild(fill);
+
+            row.appendChild(label);
+            row.appendChild(track);
+            row.appendChild(valueText);
+
+
+            return row;
+
+          });
+
+
+      output.innerHTML = "";
+
+
+      const heading =
+        document.createElement("div");
+
+      heading.className =
+        "result-heading";
+
+
+      const kicker =
+        document.createElement("span");
+
+      kicker.className =
+        "section-kicker";
+
+      kicker.textContent =
+        "MODEL OUTPUT";
+
+
+      const verdict =
+        document.createElement("div");
+
+      verdict.className =
+        "verdict";
+
+
+      const title =
+        document.createElement("h3");
+
+      title.textContent =
+        LABELS[predictedClass] ||
+        predictedClass ||
+        "Unknown";
+
+
+      title.style.color =
+        COLORS[predictedClass] ||
+        "var(--ink)";
+
+
+      const confidenceText =
+        document.createElement("span");
+
+
+      confidenceText.textContent =
+        `${(
+          confidence * 100
+        ).toFixed(1)}% model confidence`;
+
+
+      verdict.appendChild(title);
+
+      verdict.appendChild(
+        confidenceText
+      );
+
+
+      heading.appendChild(kicker);
+
+      heading.appendChild(verdict);
+
+
+      const note =
+        document.createElement("p");
+
+      note.className =
+        "result-note";
+
+      note.textContent =
+        "Classification based on the submitted pre- and post-flood building crops. Model confidence is not the same as calibrated certainty.";
+
+
+      const barsContainer =
+        document.createElement("div");
+
+      barsContainer.className =
+        "bars";
+
+
+      bars.forEach(
+        bar => barsContainer.appendChild(bar)
+      );
+
+
+      output.appendChild(heading);
+
+      output.appendChild(note);
+
+      output.appendChild(
+        barsContainer
+      );
 
 
       requestAnimationFrame(() => {
@@ -1416,7 +1805,7 @@ $("go").addEventListener(
           .forEach(fill => {
 
             fill.style.width =
-              fill.dataset.w + "%";
+              `${fill.dataset.w}%`;
 
           });
 
@@ -1425,14 +1814,25 @@ $("go").addEventListener(
 
     } catch (error) {
 
-      output.innerHTML = `
-        <p class="err">
-          ${
-            error.message ||
-            "Unable to connect to the inference API."
-          }
-        </p>
-      `;
+      output.className = "show";
+
+      output.innerHTML = "";
+
+
+      const message =
+        document.createElement("p");
+
+
+      message.className =
+        "err";
+
+
+      message.textContent =
+        error.message ||
+        "Unable to connect to the inference API.";
+
+
+      output.appendChild(message);
 
     }
 
@@ -1462,7 +1862,9 @@ checkHealth();
   }
 
 
-  const cursor = $("cur");
+  const cursor =
+    $("cur");
+
 
   const label =
     cursor.querySelector(".lab");
@@ -1526,7 +1928,8 @@ checkHealth();
 
 (function() {
 
-  const band = $("band");
+  const band =
+    $("band");
 
 
   if (
@@ -1617,6 +2020,7 @@ checkHealth();
       direction = 1;
     }
 
+
     if (velocity < -20) {
       direction = -1;
     }
@@ -1652,9 +2056,13 @@ checkHealth();
           `translateX(
             -${
               (
-                (positions[index] % width) +
+                (
+                  positions[index] %
+                  width
+                ) +
                 width
-              ) % width
+              ) %
+              width
             }px
           )`;
 
