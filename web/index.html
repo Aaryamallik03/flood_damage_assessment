@@ -3,182 +3,886 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flood Damage Assessment</title>
-<meta name="description" content="Research prototype that rates building damage from before and after flood imagery.">
+<title>Flood Damage Assessment | Aarya Mallik</title>
+<meta name="description" content="Deep learning prototype for building damage classification from pre- and post-disaster imagery using a Siamese ResNet-50.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
-<header><div class="wrap"><b>Flood Damage Assessment</b>
-<nav><a href="#nepal">Nepal flood</a><a href="#how">Method</a><a href="#results">Results</a><a href="#limits">Limits</a><a href="https://github.com/Aaryamallik03/flood_damage_assessment">GitHub</a></nav></div></header>
+
+<header>
+  <div class="wrap header-inner">
+    <a class="brand" href="#">Flood Damage Assessment</a>
+
+    <nav aria-label="Main navigation">
+      <a href="#how">Method</a>
+      <a href="#engineering">Engineering</a>
+      <a href="#results">Results</a>
+      <a href="#nepal">Nepal</a>
+      <a href="#limits">Limitations</a>
+      <a href="https://github.com/Aaryamallik03/flood_damage_assessment" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
 
 <main class="wrap">
-<div class="hero">
-<h1>Rate flood damage to a building from two images</h1>
-<p class="lead">Upload a before and an after image of the same building. The model labels the damage as none, minor, major or destroyed. This is a research prototype. It was trained on xBD flood imagery and has not yet been tested on the August 2026 flood in Nepal.</p>
 
-<div class="tool">
-<div class="toolhead"><strong>Building damage classifier</strong>
-<div class="status" role="status"><span class="dot" id="dot"></span><span id="stat">Checking model</span></div></div>
-<div class="pair">
-<label class="drop" id="dpre" data-cursor="Add before image"><span class="tag">Before</span><span>Drop or choose the image from before the flood</span><input type="file" accept="image/png,image/jpeg,image/tiff" id="fpre"></label>
-<label class="drop" id="dpost" data-cursor="Add after image"><span class="tag">After</span><span>Drop or choose the image from after the flood</span><input type="file" accept="image/png,image/jpeg,image/tiff" id="fpost"></label>
-</div>
-<div class="actions"><button id="go" disabled>Assess damage</button><button class="ghost" id="reset" type="button">Clear</button></div>
-<p class="hint">The model was trained on square crops centred on one building. Use a crop of a single building at the same location in both images. Whole scenes give unreliable results. Images are processed once and not kept; see the <a href="/privacy">privacy policy</a>.</p>
-<div id="result" aria-live="polite"></div>
-</div>
-</div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">DEEP LEARNING · COMPUTER VISION · REMOTE SENSING</div>
 
-<div class="sec" id="nepal"><h2>The flood in Nepal</h2><div>
-<p>On the morning of 26 August 2026 a sudden surge of water came down the Bhote Koshi river from the Tibet border after a high-altitude rock and ice failure. It moved through Rasuwa, Nuwakot and Dhading along the Trishuli corridor and destroyed homes, bridges, roads and hydropower facilities.</p>
-<p>Nepal's disaster authority, NDRRMA, reported 675 deaths as of 29 August, with about 2,500 people still out of contact. IOM estimated that 84,270 people were affected across six districts. These figures were still changing when this page was written, so check <a href="https://ndrrma.gov.np">NDRRMA</a> for current numbers. Other sources: <a href="https://www.undp.org/node/601766">UNDP Nepal</a> and <a href="https://global-flood.emergency.copernicus.eu/news/259-floods-in-nepal-and-tibet-august-2026/">Copernicus Emergency Management Service</a>.</p>
-<div class="note">The model was trained on other flood events from the xBD dataset. This was a steep-valley flash flood carrying debris, which looks different from much of that data. Results on Nepal imagery test the model. They are not a verified damage assessment. For real decisions use Copernicus EMS maps and field assessments by NDRRMA and the Nepal Red Cross.</div>
-<p>Pre- and post-event imagery is available through the International Charter on Space and Major Disasters (activation 1052) and Copernicus EMS. The next step is to crop individual buildings from it and compare the model's ratings with the published damage maps.</p>
-</div></div>
+    <h1>Building Damage Assessment from Pre- and Post-Flood Imagery</h1>
 
-<div class="sec" id="how"><h2>Method</h2><div>
-<p>The classifier is a Siamese network. One ResNet-50 encoder, shared by both images, turns each image into a feature vector.</p>
-<ol>
-<li>Crop a 224 by 224 patch around the building, before and after.</li>
-<li>Encode each patch with the shared ResNet-50.</li>
-<li>Join the two feature vectors (2048 plus 2048 values).</li>
-<li>Pass them through a small network (4096 to 512 to 128 to 4) that outputs the damage class.</li>
-</ol>
-<p>A second component, still in development, maps flooded areas from SAR radar imagery, which works through cloud cover.</p>
-</div></div>
+    <p class="lead">
+      A Siamese ResNet-50 model compares corresponding pre- and post-disaster
+      building imagery and classifies damage as no damage, minor, major, or
+      destroyed. This is a research prototype trained on xBD flood imagery
+      and has not yet been independently validated on Nepal flood imagery.
+    </p>
 
-<div class="sec" id="results"><h2>Results</h2><div>
-<p>The classifier was trained on 45,709 building samples from flood events in the xBD / xView2 dataset: 23,424 no damage, 9,360 minor, 10,302 major and 2,623 destroyed.</p>
-<dl class="facts"><dt>Samples evaluated</dt><dd>2,000 (500 per class)</dd><dt>Accuracy</dt><dd>96.45%</dd><dt>Macro F1</dt><dd>96.43%</dd></dl>
-<div class="note">These numbers are a diagnostic, not a test score. The 2,000 samples come from the same data the model trained on, and the train and validation split was random, so buildings from one event can fall on both sides. Expect lower numbers on a flood the model has not seen.</div>
-<details class="disc"><summary>Show confusion matrix</summary><div class="in">
-<table><caption style="text-align:left;padding-bottom:6px">Rows are actual, columns are predicted</caption>
-<tr><th></th><th>None</th><th>Minor</th><th>Major</th><th>Destroyed</th></tr>
-<tr><th>None</th><td class="hit">499</td><td>1</td><td>0</td><td>0</td></tr>
-<tr><th>Minor</th><td>3</td><td class="hit">496</td><td>1</td><td>0</td></tr>
-<tr><th>Major</th><td>10</td><td>8</td><td class="hit">482</td><td>0</td></tr>
-<tr><th>Destroyed</th><td>21</td><td>18</td><td>9</td><td class="hit">452</td></tr></table>
-<p style="margin:10px 0 0">48 of 500 destroyed buildings were rated as less damaged. Destroyed is the rarest class in the training data.</p></div></details>
-</div></div>
+    <div class="stack" aria-label="Technology stack">
+      <span>PyTorch</span>
+      <span>Siamese ResNet-50</span>
+      <span>FastAPI</span>
+      <span>Docker</span>
+      <span>Cloud deployment</span>
+    </div>
 
-<div class="sec" id="limits"><h2>Limits</h2><div>
-<ul>
-<li>There is no independent, event-level test set yet.</li>
-<li>Building crops must be supplied. Automatic building detection is not built.</li>
-<li>The SAR flood segmentation has not been evaluated on held-out data.</li>
-<li>The model has not been validated for any region, including Nepal. It is not a tool for rescue, insurance or official decisions. See the <a href="/terms">terms of use</a>.</li>
-</ul></div></div>
+    <div class="hero-links">
+      <a class="primary-link" href="#demo">Try the classifier ↓</a>
+      <a class="secondary-link" href="https://github.com/Aaryamallik03/flood_damage_assessment" target="_blank" rel="noopener">View source on GitHub ↗</a>
+    </div>
+  </section>
+
+
+  <!-- DEMO -->
+  <section class="tool-section" id="demo">
+    <div class="tool">
+      <div class="toolhead">
+        <div>
+          <span class="section-kicker">LIVE INFERENCE</span>
+          <strong>Building damage classifier</strong>
+        </div>
+
+        <div class="status" role="status">
+          <span class="dot" id="dot"></span>
+          <span id="stat">Checking model</span>
+        </div>
+      </div>
+
+      <div class="pair">
+        <label class="drop" id="dpre" data-cursor="Add before image">
+          <span class="tag">Before</span>
+          <span class="drop-copy">
+            <strong>Pre-flood image</strong>
+            <small>Drop or choose an image</small>
+          </span>
+          <input type="file" accept="image/png,image/jpeg,image/tiff" id="fpre">
+        </label>
+
+        <label class="drop" id="dpost" data-cursor="Add after image">
+          <span class="tag">After</span>
+          <span class="drop-copy">
+            <strong>Post-flood image</strong>
+            <small>Drop or choose an image</small>
+          </span>
+          <input type="file" accept="image/png,image/jpeg,image/tiff" id="fpost">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="go" disabled>Assess damage</button>
+        <button class="ghost" id="reset" type="button">Clear</button>
+      </div>
+
+      <p class="hint">
+        <strong>For reliable results:</strong> use matching crops containing
+        one building from the same location before and after the flood.
+        The model was trained on 224 × 224 building-centered crops;
+        whole-scene images may produce unreliable predictions.
+        Images are processed once and not kept.
+        See the <a href="/privacy">privacy policy</a>.
+      </p>
+
+      <div id="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+
+  <!-- METHOD -->
+  <section class="sec" id="how">
+    <div class="sec-title">
+      <span class="section-number">01</span>
+      <h2>Method</h2>
+    </div>
+
+    <div class="sec-content">
+      <p>
+        The building classifier uses a Siamese convolutional neural network
+        with two branches that share the same ResNet-50 encoder weights.
+        Each branch converts one image into a 2048-dimensional feature vector.
+      </p>
+
+      <div class="architecture" aria-label="Siamese ResNet-50 architecture">
+        <div class="arch-column">
+          <div class="arch-box">Pre-flood<br><small>224 × 224 crop</small></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-box">Shared ResNet-50</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-box">2048-D feature</div>
+        </div>
+
+        <div class="arch-join">
+          <span>+</span>
+          <small>Feature<br>concatenation</small>
+        </div>
+
+        <div class="arch-column">
+          <div class="arch-box">Post-flood<br><small>224 × 224 crop</small></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-box">Shared ResNet-50</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-box">2048-D feature</div>
+        </div>
+
+        <div class="arch-head">
+          <span>4096 → 512 → 128 → 4</span>
+          <small>Classification head</small>
+        </div>
+
+        <div class="arch-output">
+          No damage · Minor · Major · Destroyed
+        </div>
+      </div>
+
+      <ol class="method-list">
+        <li>Extract a building-centered patch from the pre-disaster image.</li>
+        <li>Extract the same spatial region from the post-disaster image.</li>
+        <li>Encode both patches using the shared ResNet-50.</li>
+        <li>Concatenate the two feature vectors.</li>
+        <li>Classify the resulting representation into four damage classes.</li>
+      </ol>
+
+      <div class="note">
+        <strong>Second component:</strong> a SAR-based flood extent
+        segmentation pipeline is also under development. It is not yet
+        evaluated on a properly held-out dataset.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ENGINEERING -->
+  <section class="sec" id="engineering">
+    <div class="sec-title">
+      <span class="section-number">02</span>
+      <h2>Engineering</h2>
+    </div>
+
+    <div class="sec-content">
+      <p>
+        The trained classifier is exposed through a FastAPI inference
+        service and connected to the web interface. The application is
+        containerized for deployment.
+      </p>
+
+      <div class="pipeline" aria-label="Application inference pipeline">
+        <div class="pipeline-box">Web UI</div>
+        <span>→</span>
+        <div class="pipeline-box">FastAPI</div>
+        <span>→</span>
+        <div class="pipeline-box">DamagePredictor</div>
+        <span>→</span>
+        <div class="pipeline-box">Siamese ResNet-50</div>
+      </div>
+
+      <div class="engineering-grid">
+        <div>
+          <span class="mini-label">MODEL</span>
+          <strong>PyTorch / Torchvision</strong>
+          <p>Shared ResNet-50 encoder with a four-class classification head.</p>
+        </div>
+
+        <div>
+          <span class="mini-label">API</span>
+          <strong>FastAPI</strong>
+          <p>Accepts a pre/post image pair and returns class probabilities.</p>
+        </div>
+
+        <div>
+          <span class="mini-label">CONTAINER</span>
+          <strong>Docker</strong>
+          <p>Packages the inference service and its deployment dependencies.</p>
+        </div>
+
+        <div>
+          <span class="mini-label">REPOSITORY</span>
+          <strong>Git + GitHub</strong>
+          <p>Source code, evaluation pipeline, model architecture and documentation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- RESULTS -->
+  <section class="sec" id="results">
+    <div class="sec-title">
+      <span class="section-number">03</span>
+      <h2>Results</h2>
+    </div>
+
+    <div class="sec-content">
+
+      <div class="metric-grid">
+        <div class="metric">
+          <span>Training samples</span>
+          <strong>45,709</strong>
+        </div>
+
+        <div class="metric">
+          <span>Diagnostic samples</span>
+          <strong>2,000</strong>
+        </div>
+
+        <div class="metric">
+          <span>Accuracy</span>
+          <strong>96.45%</strong>
+        </div>
+
+        <div class="metric">
+          <span>Macro F1</span>
+          <strong>96.43%</strong>
+        </div>
+      </div>
+
+      <div class="note warning">
+        <strong>Evaluation caveat:</strong>
+        These results are diagnostic rather than an independent test score.
+        The 2,000 evaluated samples are drawn from the same overall dataset
+        used during development, and the original random train/validation
+        split was not saved. These numbers should therefore not be interpreted
+        as final generalization performance on an unseen flood event.
+      </div>
+
+      <h3 class="subheading">Per-class performance</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>No damage</td>
+              <td>0.94</td>
+              <td>1.00</td>
+              <td>0.97</td>
+            </tr>
+
+            <tr>
+              <td>Minor damage</td>
+              <td>0.95</td>
+              <td>0.99</td>
+              <td>0.97</td>
+            </tr>
+
+            <tr>
+              <td>Major damage</td>
+              <td>0.98</td>
+              <td>0.96</td>
+              <td>0.97</td>
+            </tr>
+
+            <tr>
+              <td>Destroyed</td>
+              <td>1.00</td>
+              <td>0.90</td>
+              <td>0.95</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details class="disc">
+        <summary>Show confusion matrix</summary>
+
+        <div class="in">
+          <table>
+            <caption>Rows are actual classes; columns are predicted classes.</caption>
+
+            <thead>
+              <tr>
+                <th></th>
+                <th>No damage</th>
+                <th>Minor</th>
+                <th>Major</th>
+                <th>Destroyed</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <th>No damage</th>
+                <td class="hit">499</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+
+              <tr>
+                <th>Minor</th>
+                <td>3</td>
+                <td class="hit">496</td>
+                <td>1</td>
+                <td>0</td>
+              </tr>
+
+              <tr>
+                <th>Major</th>
+                <td>10</td>
+                <td>8</td>
+                <td class="hit">482</td>
+                <td>0</td>
+              </tr>
+
+              <tr>
+                <th>Destroyed</th>
+                <td>21</td>
+                <td>18</td>
+                <td>9</td>
+                <td class="hit">452</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <div class="finding">
+        <span class="finding-label">KEY FINDING</span>
+        <p>
+          Destroyed buildings were the most difficult class to identify:
+          48 of 500 destroyed examples were classified as a less severe
+          damage category. Destroyed is also the smallest class in the
+          training data, with 2,623 of 45,709 samples.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- DATASET -->
+  <section class="sec">
+    <div class="sec-title">
+      <span class="section-number">04</span>
+      <h2>Dataset</h2>
+    </div>
+
+    <div class="sec-content">
+      <p>
+        The building damage component uses flood-related events from the
+        xBD / xView2 disaster-damage dataset. Building-centered pre- and
+        post-disaster image patches are extracted from corresponding
+        spatial locations.
+      </p>
+
+      <div class="class-grid">
+        <div>
+          <span>No damage</span>
+          <strong>23,424</strong>
+        </div>
+
+        <div>
+          <span>Minor damage</span>
+          <strong>9,360</strong>
+        </div>
+
+        <div>
+          <span>Major damage</span>
+          <strong>10,302</strong>
+        </div>
+
+        <div>
+          <span>Destroyed</span>
+          <strong>2,623</strong>
+        </div>
+      </div>
+
+      <p class="muted">
+        Images are resized to 224 × 224 and normalized using ImageNet
+        statistics. The class distribution is imbalanced, with destroyed
+        buildings representing the smallest class.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- NEPAL -->
+  <section class="sec" id="nepal">
+    <div class="sec-title">
+      <span class="section-number">05</span>
+      <h2>The flood in Nepal</h2>
+    </div>
+
+    <div class="sec-content">
+      <p>
+        On the morning of 26 August 2026, a sudden surge of water came down
+        the Bhote Koshi river from the Tibet border after a high-altitude
+        rock and ice failure. It moved through Rasuwa, Nuwakot and Dhading
+        along the Trishuli corridor and destroyed homes, bridges, roads and
+        hydropower facilities.
+      </p>
+
+      <p>
+        Nepal's disaster authority, NDRRMA, reported 675 deaths as of
+        29 August, with about 2,500 people still out of contact. IOM
+        estimated that 84,270 people were affected across six districts.
+        These figures were still changing when this page was written.
+        See <a href="https://ndrrma.gov.np" target="_blank" rel="noopener">NDRRMA</a>
+        for current information.
+      </p>
+
+      <p class="source-line">
+        Additional sources:
+        <a href="https://www.undp.org/node/601766" target="_blank" rel="noopener">UNDP Nepal</a>
+        and
+        <a href="https://global-flood.emergency.copernicus.eu/news/259-floods-in-nepal-and-tibet-august-2026/" target="_blank" rel="noopener">Copernicus EMS</a>.
+      </p>
+
+      <div class="note">
+        <strong>Why this matters for the model:</strong>
+        The classifier was trained on other flood events in xBD. The
+        August 2026 event was a steep-valley flash flood carrying debris,
+        so its imagery and damage patterns may differ from the training
+        distribution. Results on Nepal imagery should therefore be treated
+        as an evaluation of generalization, not a verified damage assessment.
+      </div>
+
+      <p>
+        Pre- and post-event imagery is available through the International
+        Charter on Space and Major Disasters and Copernicus EMS. A useful
+        next step is to extract individual buildings from that imagery and
+        compare model predictions against published damage maps and field
+        assessments.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- LIMITATIONS -->
+  <section class="sec" id="limits">
+    <div class="sec-title">
+      <span class="section-number">06</span>
+      <h2>Limitations</h2>
+    </div>
+
+    <div class="sec-content">
+      <ul class="limits-list">
+        <li>No independent, event-level test set has been established yet.</li>
+        <li>The original training process used a random train/validation split, so related imagery can potentially appear across different splits.</li>
+        <li>Building-centered crops must be supplied; automatic building detection is not currently implemented.</li>
+        <li>The SAR flood segmentation component has not been evaluated on held-out data.</li>
+        <li>The model has not been validated for Nepal or another completely unseen geographic event.</li>
+        <li>The system should not be used as the sole basis for rescue, insurance, infrastructure, or other high-stakes decisions.</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- FUTURE -->
+  <section class="sec" id="future">
+    <div class="sec-title">
+      <span class="section-number">07</span>
+      <h2>Next steps</h2>
+    </div>
+
+    <div class="sec-content">
+      <ul class="future-list">
+        <li>Introduce reproducible event-level train, validation and test splits.</li>
+        <li>Evaluate generalization on completely unseen disaster events.</li>
+        <li>Validate performance on Nepal-specific flood imagery.</li>
+        <li>Add automatic building-footprint detection for inference.</li>
+        <li>Improve handling of the imbalanced damage classes.</li>
+        <li>Evaluate and improve the SAR flood segmentation component.</li>
+        <li>Add calibrated probabilities and additional error analysis.</li>
+        <li>Explore Grad-CAM or related explainability methods.</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- CONTRIBUTION -->
+  <section class="sec" id="contribution">
+    <div class="sec-title">
+      <span class="section-number">08</span>
+      <h2>My contribution</h2>
+    </div>
+
+    <div class="sec-content">
+      <p>
+        This project covers the ML pipeline as well as the application layer.
+        The work includes:
+      </p>
+
+      <ul>
+        <li>Preprocessing and preparation of disaster imagery.</li>
+        <li>Implementation and training of the Siamese ResNet-50 classifier.</li>
+        <li>Model evaluation and class-level error analysis.</li>
+        <li>FastAPI integration for model inference.</li>
+        <li>Docker-based application packaging.</li>
+        <li>Interactive web interface for pre/post image inference.</li>
+        <li>Project documentation and deployment workflow.</li>
+      </ul>
+    </div>
+  </section>
+
 </main>
 
+
+<!-- CLOSING BAND -->
 <div class="band" id="band" aria-hidden="true">
-<div class="row"><span>Bhote Koshi flash flood, 26 August 2026. Rasuwa, Nuwakot, Dhading.</span></div>
-<div class="row"><span>675 deaths reported by NDRRMA as of 29 August. 84,270 people affected, IOM.</span></div>
+  <div class="row">
+    <span>Building damage classification · Pre/post-disaster imagery · Siamese ResNet-50</span>
+  </div>
+
+  <div class="row">
+    <span>xBD / xView2 · Computer vision · Remote sensing · Disaster assessment</span>
+  </div>
 </div>
 
-<footer><div class="wrap">
-<a href="/privacy">Privacy policy</a><a href="/terms">Terms of use</a><a href="https://github.com/Aaryamallik03/flood_damage_assessment">Source on GitHub</a>
-<p style="margin:12px 0 0">Aarya Mallik, B.Tech Computer Science Engineering, NIT Meghalaya.</p>
-</div></footer>
 
-<div id="cur" aria-hidden="true"><div class="in"><svg width="24" height="29" viewBox="0 0 26 31" fill="none"><path fill="#22c55e" fill-rule="evenodd" stroke="#fff" stroke-linecap="square" stroke-width="2" d="M21.993 14.425 2.549 2.935l4.444 23.108 4.653-10.002z" clip-rule="evenodd"/></svg><div><span class="lab"></span></div></div></div>
+<footer>
+  <div class="wrap">
+    <div class="footer-links">
+      <a href="/privacy">Privacy policy</a>
+      <a href="/terms">Terms of use</a>
+      <a href="https://github.com/Aaryamallik03/flood_damage_assessment" target="_blank" rel="noopener">Source on GitHub</a>
+    </div>
+
+    <p>Aarya Mallik · B.Tech Computer Science Engineering · NIT Meghalaya</p>
+  </div>
+</footer>
+
+
+<div id="cur" aria-hidden="true">
+  <div class="in">
+    <svg width="24" height="29" viewBox="0 0 26 31" fill="none">
+      <path
+        fill="#22c55e"
+        fill-rule="evenodd"
+        stroke="#fff"
+        stroke-linecap="square"
+        stroke-width="2"
+        d="M21.993 14.425 2.549 2.935l4.444 23.108 4.653-10.002 4.347 8.384z"
+        clip-rule="evenodd">
+      </path>
+    </svg>
+    <div><span class="lab"></span></div>
+  </div>
+</div>
+
 
 <script>
 const $ = id => document.getElementById(id);
-const files = {pre: null, post: null};
-const COLORS = {"no-damage":"var(--c0)","minor-damage":"var(--c1)","major-damage":"var(--c2)","destroyed":"var(--c3)"};
-const LABELS = {"no-damage":"No damage","minor-damage":"Minor damage","major-damage":"Major damage","destroyed":"Destroyed"};
-let modelReady = false;
-function refresh(){ $("go").disabled = !(modelReady && files.pre && files.post); }
 
-async function checkHealth(){
-  try{
-    const r = await fetch("/health"); const j = await r.json();
-    modelReady = j.damage_model_loaded;
-    $("dot").className = "dot " + (modelReady ? "on" : "off");
-    $("stat").textContent = modelReady ? "Model ready" : "Model not loaded: " + (j.error || "unknown error");
-  }catch(e){
-    $("dot").className = "dot off";
-    $("stat").textContent = "Backend offline. Start it with: uvicorn backend.main:app";
-  }
-  refresh();
-}
-function setup(key, input, box){
-  const set = f => {
-    if(!f) return;
-    files[key] = f;
-    box.querySelector("img")?.remove();
-    const img = document.createElement("img");
-    img.alt = key === "pre" ? "Image from before the flood" : "Image from after the flood";
-    img.src = URL.createObjectURL(f);
-    box.appendChild(img); refresh();
-  };
-  input.addEventListener("change", () => set(input.files[0]));
-  box.addEventListener("dragover", e => { e.preventDefault(); box.classList.add("over"); });
-  box.addEventListener("dragleave", () => box.classList.remove("over"));
-  box.addEventListener("drop", e => { e.preventDefault(); box.classList.remove("over"); set(e.dataTransfer.files[0]); });
-}
-setup("pre", $("fpre"), $("dpre")); setup("post", $("fpost"), $("dpost"));
-$("reset").onclick = () => {
-  files.pre = files.post = null;
-  document.querySelectorAll(".drop img").forEach(i => i.remove());
-  $("fpre").value = $("fpost").value = "";
-  $("result").className = ""; $("result").innerHTML = ""; refresh();
+const files = {
+  pre: null,
+  post: null
 };
-$("go").onclick = async () => {
-  const out = $("result"); out.className = "show"; out.textContent = "Analysing";
-  $("go").disabled = true;
-  const fd = new FormData(); fd.append("pre_image", files.pre); fd.append("post_image", files.post);
-  try{
-    const r = await fetch("/predict/damage", {method:"POST", body:fd});
+
+const COLORS = {
+  "no-damage": "var(--c0)",
+  "minor-damage": "var(--c1)",
+  "major-damage": "var(--c2)",
+  "destroyed": "var(--c3)"
+};
+
+const LABELS = {
+  "no-damage": "No damage",
+  "minor-damage": "Minor damage",
+  "major-damage": "Major damage",
+  "destroyed": "Destroyed"
+};
+
+let modelReady = false;
+
+function refresh() {
+  $("go").disabled = !(modelReady && files.pre && files.post);
+}
+
+async function checkHealth() {
+  try {
+    const r = await fetch("/health");
     const j = await r.json();
-    if(!r.ok) throw new Error(j.detail || "Request failed");
-    const cls = j.damage_class;
-    const bars = Object.entries(j.class_probabilities).map(([k,v]) =>
-      `<div class="bar"><span>${LABELS[k]||k}</span><div class="track"><div class="fill" data-w="${(v*100).toFixed(1)}" style="background:${COLORS[k]}"></div></div><span>${(v*100).toFixed(1)}%</span></div>`).join("");
-    out.innerHTML = `<div class="verdict"><h3 style="color:${COLORS[cls]}">${LABELS[cls]||cls}</h3><span>${(j.confidence*100).toFixed(1)}% confidence</span></div><div class="bars">${bars}</div>`;
-    requestAnimationFrame(() => out.querySelectorAll(".fill").forEach(f => f.style.width = f.dataset.w + "%"));
-  }catch(e){ out.innerHTML = `<p class="err">${e.message}</p>`; }
+
+    modelReady = j.damage_model_loaded;
+
+    $("dot").className = "dot " + (modelReady ? "on" : "off");
+    $("stat").textContent = modelReady
+      ? "Model ready"
+      : "Model not loaded: " + (j.error || "unknown error");
+
+  } catch (e) {
+    $("dot").className = "dot off";
+    $("stat").textContent =
+      "Backend offline. Start it with: uvicorn backend.main:app";
+  }
+
+  refresh();
+}
+
+function setup(key, input, box) {
+  const set = f => {
+    if (!f) return;
+
+    files[key] = f;
+
+    box.querySelector("img")?.remove();
+
+    const img = document.createElement("img");
+
+    img.alt = key === "pre"
+      ? "Uploaded image from before the flood"
+      : "Uploaded image from after the flood";
+
+    img.src = URL.createObjectURL(f);
+
+    box.appendChild(img);
+
+    refresh();
+  };
+
+  input.addEventListener("change", () => {
+    set(input.files[0]);
+  });
+
+  box.addEventListener("dragover", e => {
+    e.preventDefault();
+    box.classList.add("over");
+  });
+
+  box.addEventListener("dragleave", () => {
+    box.classList.remove("over");
+  });
+
+  box.addEventListener("drop", e => {
+    e.preventDefault();
+    box.classList.remove("over");
+    set(e.dataTransfer.files[0]);
+  });
+}
+
+setup("pre", $("fpre"), $("dpre"));
+setup("post", $("fpost"), $("dpost"));
+
+
+$("reset").onclick = () => {
+  files.pre = null;
+  files.post = null;
+
+  document.querySelectorAll(".drop img").forEach(i => i.remove());
+
+  $("fpre").value = "";
+  $("fpost").value = "";
+
+  $("result").className = "";
+  $("result").innerHTML = "";
+
   refresh();
 };
+
+
+$("go").onclick = async () => {
+  const out = $("result");
+
+  out.className = "show loading";
+  out.innerHTML = `
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <span>Analysing image pair…</span>
+    </div>
+  `;
+
+  $("go").disabled = true;
+
+  const fd = new FormData();
+
+  fd.append("pre_image", files.pre);
+  fd.append("post_image", files.post);
+
+  try {
+    const r = await fetch("/predict/damage", {
+      method: "POST",
+      body: fd
+    });
+
+    const j = await r.json();
+
+    if (!r.ok) {
+      throw new Error(j.detail || "Request failed");
+    }
+
+    const cls = j.damage_class;
+
+    const bars = Object.entries(j.class_probabilities)
+      .map(([k, v]) => `
+        <div class="bar">
+          <span>${LABELS[k] || k}</span>
+
+          <div class="track">
+            <div
+              class="fill"
+              data-w="${(v * 100).toFixed(1)}"
+              style="background:${COLORS[k] || "var(--ink)"}">
+            </div>
+          </div>
+
+          <span>${(v * 100).toFixed(1)}%</span>
+        </div>
+      `)
+      .join("");
+
+    out.innerHTML = `
+      <div class="result-heading">
+        <span class="section-kicker">MODEL OUTPUT</span>
+
+        <div class="verdict">
+          <h3 style="color:${COLORS[cls] || "var(--ink)"}">
+            ${LABELS[cls] || cls}
+          </h3>
+
+          <span>${(j.confidence * 100).toFixed(1)}% confidence</span>
+        </div>
+      </div>
+
+      <p class="result-note">
+        Classification based on the visual difference between the
+        submitted pre- and post-flood building crops.
+      </p>
+
+      <div class="bars">
+        ${bars}
+      </div>
+    `;
+
+    requestAnimationFrame(() => {
+      out.querySelectorAll(".fill").forEach(f => {
+        f.style.width = f.dataset.w + "%";
+      });
+    });
+
+  } catch (e) {
+    out.innerHTML = `
+      <p class="err">${e.message}</p>
+    `;
+  }
+
+  refresh();
+};
+
 checkHealth();
 
-/* Name-tag cursor, shown only over the two upload areas */
-(function(){
-  if(!matchMedia("(pointer:fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const cur = $("cur"), lab = cur.querySelector(".lab");
+
+/* Name-tag cursor over upload areas */
+(function() {
+  if (
+    !matchMedia("(pointer:fine)").matches ||
+    matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return;
+  }
+
+  const cur = $("cur");
+  const lab = cur.querySelector(".lab");
+
   document.querySelectorAll(".drop").forEach(z => {
     z.classList.add("nocursor");
-    z.addEventListener("pointerenter", () => { lab.textContent = z.dataset.cursor; cur.classList.add("on"); });
-    z.addEventListener("pointermove", e => { cur.style.transform = `translate(${e.clientX-3}px,${e.clientY-3}px)`; });
-    z.addEventListener("pointerleave", () => cur.classList.remove("on"));
+
+    z.addEventListener("pointerenter", () => {
+      lab.textContent = z.dataset.cursor;
+      cur.classList.add("on");
+    });
+
+    z.addEventListener("pointermove", e => {
+      cur.style.transform =
+        `translate(${e.clientX - 3}px,${e.clientY - 3}px)`;
+    });
+
+    z.addEventListener("pointerleave", () => {
+      cur.classList.remove("on");
+    });
   });
 })();
 
-/* Closing text band: drifts slowly, speeds up and follows the direction of scrolling */
-(function(){
+
+/* Closing scrolling text band */
+(function() {
   const band = $("band");
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches){ band.classList.add("static"); return; }
+
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    band.classList.add("static");
+    return;
+  }
+
   const rows = [...band.querySelectorAll(".row")];
   const unit = rows.map(r => r.firstElementChild);
+
   rows.forEach((r, i) => {
-    for(let n = 0; n < 24 && r.offsetWidth < innerWidth * 2 + unit[i].offsetWidth; n++) r.appendChild(unit[i].cloneNode(true));
+    for (
+      let n = 0;
+      n < 24 && r.offsetWidth < innerWidth * 2 + unit[i].offsetWidth;
+      n++
+    ) {
+      r.appendChild(unit[i].cloneNode(true));
+    }
   });
-  const pos = [0, 0]; let dir = 1, v = 0, last = scrollY, t0 = performance.now();
-  function tick(t){
-    const dt = Math.max(1, t - t0) / 1000; t0 = t;
-    v = v * 0.9 + ((scrollY - last) / dt) * 0.1; last = scrollY;
-    if(v > 20) dir = 1; else if(v < -20) dir = -1;
-    const speed = 30 * (1 + Math.min(Math.abs(v) / 200, 4));
+
+  const pos = [0, 0];
+  let dir = 1;
+  let v = 0;
+  let last = scrollY;
+  let t0 = performance.now();
+
+  function tick(t) {
+    const dt = Math.max(1, t - t0) / 1000;
+
+    t0 = t;
+
+    v = v * 0.9 + ((scrollY - last) / dt) * 0.1;
+    last = scrollY;
+
+    if (v > 20) {
+      dir = 1;
+    } else if (v < -20) {
+      dir = -1;
+    }
+
+    const speed =
+      30 * (1 + Math.min(Math.abs(v) / 200, 4));
+
     rows.forEach((r, i) => {
       const w = unit[i].offsetWidth || 1;
+
       pos[i] += (i ? -1 : 1) * dir * speed * dt;
-      r.style.transform = `translateX(${-(((pos[i] % w) + w) % w)}px)`;
+
+      r.style.transform =
+        `translateX(-${((pos[i] % w) + w) % w}px)`;
     });
+
     requestAnimationFrame(tick);
   }
+
   requestAnimationFrame(tick);
 })();
 </script>
+
 </body>
 </html>
