@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flood Damage Assessment | Aarya Mallik</title>
-<meta name="description" content="Deep learning prototype for building damage classification from pre- and post-disaster imagery using a Siamese ResNet-50.">
-<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flood Damage Assessment | Aarya Mallik</title>
+  <meta name="description" content="Deep learning prototype for building damage classification from pre- and post-disaster imagery using a Siamese ResNet-50.">
+
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
 <header>
   <div class="wrap header-inner">
-    <a class="brand" href="#">Flood Damage Assessment</a>
+    <a class="brand" href="./">Flood Damage Assessment</a>
 
     <nav aria-label="Main navigation">
       <a href="#how">Method</a>
@@ -21,14 +22,16 @@
       <a href="#results">Results</a>
       <a href="#nepal">Nepal</a>
       <a href="#limits">Limitations</a>
-      <a href="https://github.com/Aaryamallik03/flood_damage_assessment" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Aaryamallik03/flood_damage_assessment" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </nav>
   </div>
 </header>
 
+
 <main class="wrap">
 
   <!-- HERO -->
+
   <section class="hero">
     <div class="eyebrow">DEEP LEARNING · COMPUTER VISION · REMOTE SENSING</div>
 
@@ -46,188 +49,306 @@
       <span>Siamese ResNet-50</span>
       <span>FastAPI</span>
       <span>Docker</span>
-      <span>Cloud deployment</span>
+      <span>Cloud Run</span>
     </div>
 
     <div class="hero-links">
       <a class="primary-link" href="#demo">Try the classifier ↓</a>
-      <a class="secondary-link" href="https://github.com/Aaryamallik03/flood_damage_assessment" target="_blank" rel="noopener">View source on GitHub ↗</a>
+
+      <a
+        class="secondary-link"
+        href="https://github.com/Aaryamallik03/flood_damage_assessment"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View source on GitHub ↗
+      </a>
     </div>
   </section>
 
 
   <!-- DEMO -->
+
   <section class="tool-section" id="demo">
     <div class="tool">
+
       <div class="toolhead">
         <div>
           <span class="section-kicker">LIVE INFERENCE</span>
           <strong>Building damage classifier</strong>
+          <p class="tool-subtitle">
+            Submit a matched before/after building pair to receive the model's prediction.
+          </p>
         </div>
 
-        <div class="status" role="status">
+        <div class="status" role="status" aria-live="polite">
           <span class="dot" id="dot"></span>
           <span id="stat">Checking model</span>
         </div>
       </div>
 
+
       <div class="pair">
+
         <label class="drop" id="dpre" data-cursor="Add before image">
           <span class="tag">Before</span>
+
           <span class="drop-copy">
+            <span class="upload-icon" aria-hidden="true">↑</span>
             <strong>Pre-flood image</strong>
             <small>Drop or choose an image</small>
           </span>
-          <input type="file" accept="image/png,image/jpeg,image/tiff" id="fpre">
+
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/tiff"
+            id="fpre"
+            aria-label="Choose pre-flood image"
+          >
         </label>
+
 
         <label class="drop" id="dpost" data-cursor="Add after image">
           <span class="tag">After</span>
+
           <span class="drop-copy">
+            <span class="upload-icon" aria-hidden="true">↑</span>
             <strong>Post-flood image</strong>
             <small>Drop or choose an image</small>
           </span>
-          <input type="file" accept="image/png,image/jpeg,image/tiff" id="fpost">
+
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/tiff"
+            id="fpost"
+            aria-label="Choose post-flood image"
+          >
         </label>
+
       </div>
 
+
       <div class="actions">
-        <button id="go" disabled>Assess damage</button>
+        <button id="go" type="button" disabled>Assess damage</button>
         <button class="ghost" id="reset" type="button">Clear</button>
       </div>
 
+
       <p class="hint">
-        <strong>For reliable results:</strong> use matching crops containing
-        one building from the same location before and after the flood.
-        The model was trained on 224 × 224 building-centered crops;
-        whole-scene images may produce unreliable predictions.
-        Images are processed once and not kept.
-        See the <a href="/privacy">privacy policy</a>.
+        <strong>For reliable results:</strong>
+        use matching crops containing one building from the same location
+        before and after the flood. The model was trained on
+        <strong>224 × 224 building-centered crops</strong>; whole-scene images
+        may produce unreliable predictions.
+        See the <a href="./privacy.html">privacy policy</a>.
       </p>
 
+
       <div id="result" aria-live="polite"></div>
+
     </div>
   </section>
 
 
   <!-- METHOD -->
+
   <section class="sec" id="how">
+
     <div class="sec-title">
       <span class="section-number">01</span>
       <h2>Method</h2>
     </div>
 
     <div class="sec-content">
+
       <p>
         The building classifier uses a Siamese convolutional neural network
         with two branches that share the same ResNet-50 encoder weights.
         Each branch converts one image into a 2048-dimensional feature vector.
       </p>
 
+
       <div class="architecture" aria-label="Siamese ResNet-50 architecture">
+
         <div class="arch-column">
-          <div class="arch-box">Pre-flood<br><small>224 × 224 crop</small></div>
+
+          <div class="arch-box">
+            Pre-flood
+            <small>224 × 224 crop</small>
+          </div>
+
           <div class="arch-arrow">↓</div>
-          <div class="arch-box">Shared ResNet-50</div>
+
+          <div class="arch-box">
+            Shared ResNet-50
+          </div>
+
           <div class="arch-arrow">↓</div>
-          <div class="arch-box">2048-D feature</div>
+
+          <div class="arch-box">
+            2048-D feature
+          </div>
+
         </div>
+
 
         <div class="arch-join">
           <span>+</span>
           <small>Feature<br>concatenation</small>
         </div>
 
+
         <div class="arch-column">
-          <div class="arch-box">Post-flood<br><small>224 × 224 crop</small></div>
+
+          <div class="arch-box">
+            Post-flood
+            <small>224 × 224 crop</small>
+          </div>
+
           <div class="arch-arrow">↓</div>
-          <div class="arch-box">Shared ResNet-50</div>
+
+          <div class="arch-box">
+            Shared ResNet-50
+          </div>
+
           <div class="arch-arrow">↓</div>
-          <div class="arch-box">2048-D feature</div>
+
+          <div class="arch-box">
+            2048-D feature
+          </div>
+
         </div>
+
 
         <div class="arch-head">
           <span>4096 → 512 → 128 → 4</span>
-          <small>Classification head</small>
+          <small>Fully connected classification head</small>
         </div>
+
 
         <div class="arch-output">
           No damage · Minor · Major · Destroyed
         </div>
+
       </div>
+
 
       <ol class="method-list">
-        <li>Extract a building-centered patch from the pre-disaster image.</li>
-        <li>Extract the same spatial region from the post-disaster image.</li>
-        <li>Encode both patches using the shared ResNet-50.</li>
-        <li>Concatenate the two feature vectors.</li>
-        <li>Classify the resulting representation into four damage classes.</li>
+
+        <li>
+          Extract a building-centered patch from the pre-disaster image.
+        </li>
+
+        <li>
+          Extract the same spatial region from the post-disaster image.
+        </li>
+
+        <li>
+          Encode both patches using the shared ResNet-50.
+        </li>
+
+        <li>
+          Concatenate the two feature vectors.
+        </li>
+
+        <li>
+          Classify the resulting representation into four damage classes.
+        </li>
+
       </ol>
 
+
       <div class="note">
-        <strong>Second component:</strong> a SAR-based flood extent
-        segmentation pipeline is also under development. It is not yet
-        evaluated on a properly held-out dataset.
+        <strong>Second component:</strong>
+        a SAR-based flood extent segmentation pipeline is also under
+        development. It is not yet evaluated on a properly held-out dataset.
       </div>
+
     </div>
   </section>
 
 
   <!-- ENGINEERING -->
+
   <section class="sec" id="engineering">
+
     <div class="sec-title">
       <span class="section-number">02</span>
       <h2>Engineering</h2>
     </div>
 
     <div class="sec-content">
+
       <p>
-        The trained classifier is exposed through a FastAPI inference
-        service and connected to the web interface. The application is
-        containerized for deployment.
+        The trained classifier is exposed through a FastAPI inference service
+        and connected to the web interface. The application is containerized
+        for deployment.
       </p>
 
+
       <div class="pipeline" aria-label="Application inference pipeline">
+
         <div class="pipeline-box">Web UI</div>
         <span>→</span>
+
         <div class="pipeline-box">FastAPI</div>
         <span>→</span>
+
         <div class="pipeline-box">DamagePredictor</div>
         <span>→</span>
+
         <div class="pipeline-box">Siamese ResNet-50</div>
+
       </div>
 
+
       <div class="engineering-grid">
+
         <div>
           <span class="mini-label">MODEL</span>
           <strong>PyTorch / Torchvision</strong>
-          <p>Shared ResNet-50 encoder with a four-class classification head.</p>
+          <p>
+            Shared ResNet-50 encoder with a four-class classification head.
+          </p>
         </div>
+
 
         <div>
           <span class="mini-label">API</span>
           <strong>FastAPI</strong>
-          <p>Accepts a pre/post image pair and returns class probabilities.</p>
+          <p>
+            Accepts a pre/post image pair and returns class probabilities.
+          </p>
         </div>
+
 
         <div>
           <span class="mini-label">CONTAINER</span>
           <strong>Docker</strong>
-          <p>Packages the inference service and its deployment dependencies.</p>
+          <p>
+            Packages the inference service and its deployment dependencies.
+          </p>
         </div>
+
 
         <div>
           <span class="mini-label">REPOSITORY</span>
           <strong>Git + GitHub</strong>
-          <p>Source code, evaluation pipeline, model architecture and documentation.</p>
+          <p>
+            Source code, evaluation pipeline, model architecture and documentation.
+          </p>
         </div>
+
       </div>
+
     </div>
   </section>
 
 
   <!-- RESULTS -->
+
   <section class="sec" id="results">
+
     <div class="sec-title">
       <span class="section-number">03</span>
       <h2>Results</h2>
@@ -235,7 +356,15 @@
 
     <div class="sec-content">
 
+
+      <div class="result-status">
+        <span class="result-status-dot"></span>
+        Diagnostic evaluation · Not an independent test benchmark
+      </div>
+
+
       <div class="metric-grid">
+
         <div class="metric">
           <span>Training samples</span>
           <strong>45,709</strong>
@@ -247,7 +376,7 @@
         </div>
 
         <div class="metric">
-          <span>Accuracy</span>
+          <span>Diagnostic accuracy</span>
           <strong>96.45%</strong>
         </div>
 
@@ -255,21 +384,30 @@
           <span>Macro F1</span>
           <strong>96.43%</strong>
         </div>
+
       </div>
 
+
       <div class="note warning">
+
         <strong>Evaluation caveat:</strong>
+
         These results are diagnostic rather than an independent test score.
         The 2,000 evaluated samples are drawn from the same overall dataset
         used during development, and the original random train/validation
         split was not saved. These numbers should therefore not be interpreted
         as final generalization performance on an unseen flood event.
+
       </div>
+
 
       <h3 class="subheading">Per-class performance</h3>
 
+
       <div class="table-wrap">
+
         <table>
+
           <thead>
             <tr>
               <th>Class</th>
@@ -280,6 +418,7 @@
           </thead>
 
           <tbody>
+
             <tr>
               <td>No damage</td>
               <td>0.94</td>
@@ -307,16 +446,25 @@
               <td>0.90</td>
               <td>0.95</td>
             </tr>
+
           </tbody>
+
         </table>
+
       </div>
 
+
       <details class="disc">
+
         <summary>Show confusion matrix</summary>
 
         <div class="in">
+
           <table>
-            <caption>Rows are actual classes; columns are predicted classes.</caption>
+
+            <caption>
+              Rows are actual classes; columns are predicted classes.
+            </caption>
 
             <thead>
               <tr>
@@ -329,6 +477,7 @@
             </thead>
 
             <tbody>
+
               <tr>
                 <th>No damage</th>
                 <td class="hit">499</td>
@@ -360,19 +509,27 @@
                 <td>9</td>
                 <td class="hit">452</td>
               </tr>
+
             </tbody>
+
           </table>
+
         </div>
+
       </details>
 
+
       <div class="finding">
+
         <span class="finding-label">KEY FINDING</span>
+
         <p>
           Destroyed buildings were the most difficult class to identify:
           48 of 500 destroyed examples were classified as a less severe
           damage category. Destroyed is also the smallest class in the
           training data, with 2,623 of 45,709 samples.
         </p>
+
       </div>
 
     </div>
@@ -380,13 +537,16 @@
 
 
   <!-- DATASET -->
+
   <section class="sec">
+
     <div class="sec-title">
       <span class="section-number">04</span>
       <h2>Dataset</h2>
     </div>
 
     <div class="sec-content">
+
       <p>
         The building damage component uses flood-related events from the
         xBD / xView2 disaster-damage dataset. Building-centered pre- and
@@ -394,7 +554,9 @@
         spatial locations.
       </p>
 
+
       <div class="class-grid">
+
         <div>
           <span>No damage</span>
           <strong>23,424</strong>
@@ -414,25 +576,31 @@
           <span>Destroyed</span>
           <strong>2,623</strong>
         </div>
+
       </div>
+
 
       <p class="muted">
         Images are resized to 224 × 224 and normalized using ImageNet
         statistics. The class distribution is imbalanced, with destroyed
         buildings representing the smallest class.
       </p>
+
     </div>
   </section>
 
 
   <!-- NEPAL -->
+
   <section class="sec" id="nepal">
+
     <div class="sec-title">
       <span class="section-number">05</span>
       <h2>The flood in Nepal</h2>
     </div>
 
     <div class="sec-content">
+
       <p>
         On the morning of 26 August 2026, a sudden surge of water came down
         the Bhote Koshi river from the Tibet border after a high-altitude
@@ -441,30 +609,52 @@
         hydropower facilities.
       </p>
 
+
       <p>
         Nepal's disaster authority, NDRRMA, reported 675 deaths as of
         29 August, with about 2,500 people still out of contact. IOM
         estimated that 84,270 people were affected across six districts.
         These figures were still changing when this page was written.
-        See <a href="https://ndrrma.gov.np" target="_blank" rel="noopener">NDRRMA</a>
+        See
+        <a href="https://ndrrma.gov.np" target="_blank" rel="noopener noreferrer">
+          NDRRMA
+        </a>
         for current information.
       </p>
 
+
       <p class="source-line">
         Additional sources:
-        <a href="https://www.undp.org/node/601766" target="_blank" rel="noopener">UNDP Nepal</a>
+        <a
+          href="https://www.undp.org/node/601766"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          UNDP Nepal
+        </a>
         and
-        <a href="https://global-flood.emergency.copernicus.eu/news/259-floods-in-nepal-and-tibet-august-2026/" target="_blank" rel="noopener">Copernicus EMS</a>.
+        <a
+          href="https://global-flood.emergency.copernicus.eu/news/259-floods-in-nepal-and-tibet-august-2026/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Copernicus EMS
+        </a>.
       </p>
 
+
       <div class="note">
+
         <strong>Why this matters for the model:</strong>
+
         The classifier was trained on other flood events in xBD. The
         August 2026 event was a steep-valley flash flood carrying debris,
         so its imagery and damage patterns may differ from the training
         distribution. Results on Nepal imagery should therefore be treated
         as an evaluation of generalization, not a verified damage assessment.
+
       </div>
+
 
       <p>
         Pre- and post-event imagery is available through the International
@@ -473,74 +663,159 @@
         compare model predictions against published damage maps and field
         assessments.
       </p>
+
     </div>
   </section>
 
 
   <!-- LIMITATIONS -->
+
   <section class="sec" id="limits">
+
     <div class="sec-title">
       <span class="section-number">06</span>
       <h2>Limitations</h2>
     </div>
 
     <div class="sec-content">
+
       <ul class="limits-list">
-        <li>No independent, event-level test set has been established yet.</li>
-        <li>The original training process used a random train/validation split, so related imagery can potentially appear across different splits.</li>
-        <li>Building-centered crops must be supplied; automatic building detection is not currently implemented.</li>
-        <li>The SAR flood segmentation component has not been evaluated on held-out data.</li>
-        <li>The model has not been validated for Nepal or another completely unseen geographic event.</li>
-        <li>The system should not be used as the sole basis for rescue, insurance, infrastructure, or other high-stakes decisions.</li>
+
+        <li>
+          No independent, event-level test set has been established yet.
+        </li>
+
+        <li>
+          The original training process used a random train/validation split,
+          so related imagery can potentially appear across different splits.
+        </li>
+
+        <li>
+          Building-centered crops must be supplied; automatic building
+          detection is not currently implemented.
+        </li>
+
+        <li>
+          The SAR flood segmentation component has not been evaluated on
+          held-out data.
+        </li>
+
+        <li>
+          The model has not been validated for Nepal or another completely
+          unseen geographic event.
+        </li>
+
+        <li>
+          The system should not be used as the sole basis for rescue,
+          insurance, infrastructure, or other high-stakes decisions.
+        </li>
+
       </ul>
+
     </div>
   </section>
 
 
   <!-- FUTURE -->
+
   <section class="sec" id="future">
+
     <div class="sec-title">
       <span class="section-number">07</span>
       <h2>Next steps</h2>
     </div>
 
     <div class="sec-content">
+
       <ul class="future-list">
-        <li>Introduce reproducible event-level train, validation and test splits.</li>
-        <li>Evaluate generalization on completely unseen disaster events.</li>
-        <li>Validate performance on Nepal-specific flood imagery.</li>
-        <li>Add automatic building-footprint detection for inference.</li>
-        <li>Improve handling of the imbalanced damage classes.</li>
-        <li>Evaluate and improve the SAR flood segmentation component.</li>
-        <li>Add calibrated probabilities and additional error analysis.</li>
-        <li>Explore Grad-CAM or related explainability methods.</li>
+
+        <li>
+          Introduce reproducible event-level train, validation and test splits.
+        </li>
+
+        <li>
+          Evaluate generalization on completely unseen disaster events.
+        </li>
+
+        <li>
+          Validate performance on Nepal-specific flood imagery.
+        </li>
+
+        <li>
+          Add automatic building-footprint detection for inference.
+        </li>
+
+        <li>
+          Improve handling of the imbalanced damage classes.
+        </li>
+
+        <li>
+          Evaluate and improve the SAR flood segmentation component.
+        </li>
+
+        <li>
+          Add calibrated probabilities and additional error analysis.
+        </li>
+
+        <li>
+          Explore Grad-CAM or related explainability methods.
+        </li>
+
       </ul>
+
     </div>
   </section>
 
 
   <!-- CONTRIBUTION -->
+
   <section class="sec" id="contribution">
+
     <div class="sec-title">
       <span class="section-number">08</span>
       <h2>My contribution</h2>
     </div>
 
     <div class="sec-content">
+
       <p>
         This project covers the ML pipeline as well as the application layer.
         The work includes:
       </p>
 
+
       <ul>
-        <li>Preprocessing and preparation of disaster imagery.</li>
-        <li>Implementation and training of the Siamese ResNet-50 classifier.</li>
-        <li>Model evaluation and class-level error analysis.</li>
-        <li>FastAPI integration for model inference.</li>
-        <li>Docker-based application packaging.</li>
-        <li>Interactive web interface for pre/post image inference.</li>
-        <li>Project documentation and deployment workflow.</li>
+
+        <li>
+          Preprocessing and preparation of disaster imagery.
+        </li>
+
+        <li>
+          Implementation and training of the Siamese ResNet-50 classifier.
+        </li>
+
+        <li>
+          Model evaluation and class-level error analysis.
+        </li>
+
+        <li>
+          FastAPI integration for model inference.
+        </li>
+
+        <li>
+          Docker-based application packaging.
+        </li>
+
+        <li>
+          Interactive web interface for pre/post image inference.
+        </li>
+
+        <li>
+          Project documentation and deployment workflow.
+        </li>
+
       </ul>
+
     </div>
   </section>
 
@@ -548,32 +823,62 @@
 
 
 <!-- CLOSING BAND -->
+
 <div class="band" id="band" aria-hidden="true">
+
   <div class="row">
-    <span>Building damage classification · Pre/post-disaster imagery · Siamese ResNet-50</span>
+    <span>
+      Building damage classification · Pre/post-disaster imagery · Siamese ResNet-50
+    </span>
   </div>
 
   <div class="row">
-    <span>xBD / xView2 · Computer vision · Remote sensing · Disaster assessment</span>
+    <span>
+      xBD / xView2 · Computer vision · Remote sensing · Disaster assessment
+    </span>
   </div>
+
 </div>
 
 
+<!-- FOOTER -->
+
 <footer>
+
   <div class="wrap">
+
     <div class="footer-links">
-      <a href="/privacy">Privacy policy</a>
-      <a href="/terms">Terms of use</a>
-      <a href="https://github.com/Aaryamallik03/flood_damage_assessment" target="_blank" rel="noopener">Source on GitHub</a>
+
+      <a href="./privacy.html">Privacy policy</a>
+
+      <a href="./terms.html">Terms of use</a>
+
+      <a
+        href="https://github.com/Aaryamallik03/flood_damage_assessment"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Source on GitHub ↗
+      </a>
+
     </div>
 
-    <p>Aarya Mallik · B.Tech Computer Science Engineering · NIT Meghalaya</p>
+
+    <p>
+      Aarya Mallik · B.Tech Computer Science Engineering · NIT Meghalaya
+    </p>
+
   </div>
+
 </footer>
 
 
+<!-- CUSTOM CURSOR -->
+
 <div id="cur" aria-hidden="true">
+
   <div class="in">
+
     <svg width="24" height="29" viewBox="0 0 26 31" fill="none">
       <path
         fill="#22c55e"
@@ -585,18 +890,45 @@
         clip-rule="evenodd">
       </path>
     </svg>
-    <div><span class="lab"></span></div>
+
+    <div>
+      <span class="lab"></span>
+    </div>
+
   </div>
+
 </div>
 
 
 <script>
+
 const $ = id => document.getElementById(id);
+
+
+/*
+  Leave empty when the FastAPI backend is served from the same origin.
+
+  If your GitHub Pages frontend uses a separate Cloud Run backend,
+  replace the empty string with your Cloud Run URL.
+
+  Example:
+  const API_BASE = "https://your-service-xxxxx.run.app";
+*/
+
+const API_BASE = "";
+
 
 const files = {
   pre: null,
   post: null
 };
+
+
+const previewUrls = {
+  pre: null,
+  post: null
+};
+
 
 const COLORS = {
   "no-damage": "var(--c0)",
@@ -605,6 +937,7 @@ const COLORS = {
   "destroyed": "var(--c3)"
 };
 
+
 const LABELS = {
   "no-damage": "No damage",
   "minor-damage": "Minor damage",
@@ -612,83 +945,338 @@ const LABELS = {
   "destroyed": "Destroyed"
 };
 
+
 let modelReady = false;
+let checkingHealth = false;
+
 
 function refresh() {
   $("go").disabled = !(modelReady && files.pre && files.post);
 }
 
-async function checkHealth() {
-  try {
-    const r = await fetch("/health");
-    const j = await r.json();
 
-    modelReady = j.damage_model_loaded;
+function setStatus(state, text) {
 
-    $("dot").className = "dot " + (modelReady ? "on" : "off");
-    $("stat").textContent = modelReady
-      ? "Model ready"
-      : "Model not loaded: " + (j.error || "unknown error");
+  const dot = $("dot");
 
-  } catch (e) {
-    $("dot").className = "dot off";
-    $("stat").textContent =
-      "Backend offline. Start it with: uvicorn backend.main:app";
+  dot.className = "dot";
+
+  if (state === "on") {
+    dot.classList.add("on");
   }
 
-  refresh();
+  if (state === "off") {
+    dot.classList.add("off");
+  }
+
+  $("stat").textContent = text;
 }
 
-function setup(key, input, box) {
-  const set = f => {
-    if (!f) return;
 
-    files[key] = f;
+async function checkHealth() {
 
-    box.querySelector("img")?.remove();
+  if (checkingHealth) {
+    return;
+  }
 
-    const img = document.createElement("img");
+  checkingHealth = true;
 
-    img.alt = key === "pre"
-      ? "Uploaded image from before the flood"
-      : "Uploaded image from after the flood";
+  setStatus("", "Checking model");
 
-    img.src = URL.createObjectURL(f);
+  try {
 
-    box.appendChild(img);
+    const response = await fetch(`${API_BASE}/health`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
 
+    if (!response.ok) {
+      throw new Error("Health check failed");
+    }
+
+    const data = await response.json();
+
+    modelReady = Boolean(data.damage_model_loaded);
+
+    if (modelReady) {
+
+      setStatus("on", "Model ready");
+
+    } else {
+
+      setStatus(
+        "off",
+        "Model unavailable"
+      );
+
+    }
+
+  } catch (error) {
+
+    modelReady = false;
+
+    if (API_BASE.trim() === "") {
+
+      setStatus(
+        "off",
+        "API not connected"
+      );
+
+    } else {
+
+      setStatus(
+        "off",
+        "Inference API unavailable"
+      );
+
+    }
+
+  } finally {
+
+    checkingHealth = false;
     refresh();
+
+  }
+}
+
+
+function isValidImage(file) {
+
+  if (!file) {
+    return false;
+  }
+
+  const validTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/tiff"
+  ];
+
+  return validTypes.includes(file.type);
+}
+
+
+function formatFileSize(bytes) {
+
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+
+function setImage(key, file, box) {
+
+  if (!file) {
+    return;
+  }
+
+
+  if (!isValidImage(file)) {
+
+    showUploadError(
+      box,
+      "Please choose a PNG, JPEG, WebP or TIFF image."
+    );
+
+    return;
+  }
+
+
+  files[key] = file;
+
+
+  if (previewUrls[key]) {
+    URL.revokeObjectURL(previewUrls[key]);
+  }
+
+
+  previewUrls[key] = URL.createObjectURL(file);
+
+
+  const oldImage = box.querySelector("img");
+
+  if (oldImage) {
+    oldImage.remove();
+  }
+
+
+  const img = document.createElement("img");
+
+  img.src = previewUrls[key];
+
+  img.alt =
+    key === "pre"
+      ? "Uploaded pre-flood image"
+      : "Uploaded post-flood image";
+
+
+  box.appendChild(img);
+
+
+  const copy = box.querySelector(".drop-copy");
+
+  if (copy) {
+
+    copy.innerHTML = `
+      <span class="upload-success" aria-hidden="true">✓</span>
+      <strong>${key === "pre" ? "Pre-flood image" : "Post-flood image"}</strong>
+      <small>${escapeHTML(file.name)} · ${formatFileSize(file.size)}</small>
+    `;
+
+  }
+
+
+  box.classList.add("has-image");
+
+
+  refresh();
+
+}
+
+
+function showUploadError(box, message) {
+
+  box.classList.add("upload-error");
+
+  const copy = box.querySelector(".drop-copy");
+
+  if (copy) {
+
+    copy.innerHTML = `
+      <span class="upload-error-icon" aria-hidden="true">!</span>
+      <strong>Unable to use this file</strong>
+      <small>${escapeHTML(message)}</small>
+    `;
+
+  }
+
+
+  setTimeout(() => {
+
+    box.classList.remove("upload-error");
+
+  }, 2500);
+
+}
+
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+function resetUploadBox(key, box) {
+
+  files[key] = null;
+
+
+  if (previewUrls[key]) {
+
+    URL.revokeObjectURL(previewUrls[key]);
+    previewUrls[key] = null;
+
+  }
+
+
+  const image = box.querySelector("img");
+
+  if (image) {
+    image.remove();
+  }
+
+
+  const label =
+    key === "pre"
+      ? "Pre-flood image"
+      : "Post-flood image";
+
+
+  const copy = box.querySelector(".drop-copy");
+
+  if (copy) {
+
+    copy.innerHTML = `
+      <span class="upload-icon" aria-hidden="true">↑</span>
+      <strong>${label}</strong>
+      <small>Drop or choose an image</small>
+    `;
+
+  }
+
+
+  box.classList.remove("has-image");
+  box.classList.remove("upload-error");
+
+}
+
+
+function setupUpload(key, input, box) {
+
+  const set = file => {
+    setImage(key, file, box);
   };
 
+
   input.addEventListener("change", () => {
+
     set(input.files[0]);
+
   });
 
-  box.addEventListener("dragover", e => {
-    e.preventDefault();
+
+  box.addEventListener("dragover", event => {
+
+    event.preventDefault();
+
     box.classList.add("over");
+
   });
 
-  box.addEventListener("dragleave", () => {
-    box.classList.remove("over");
+
+  box.addEventListener("dragleave", event => {
+
+    if (!box.contains(event.relatedTarget)) {
+      box.classList.remove("over");
+    }
+
   });
 
-  box.addEventListener("drop", e => {
-    e.preventDefault();
+
+  box.addEventListener("drop", event => {
+
+    event.preventDefault();
+
     box.classList.remove("over");
-    set(e.dataTransfer.files[0]);
+
+    const file = event.dataTransfer.files[0];
+
+    set(file);
+
   });
+
 }
 
-setup("pre", $("fpre"), $("dpre"));
-setup("post", $("fpost"), $("dpost"));
+
+setupUpload("pre", $("fpre"), $("dpre"));
+setupUpload("post", $("fpost"), $("dpost"));
 
 
-$("reset").onclick = () => {
-  files.pre = null;
-  files.post = null;
+$("reset").addEventListener("click", () => {
 
-  document.querySelectorAll(".drop img").forEach(i => i.remove());
+  resetUploadBox("pre", $("dpre"));
+  resetUploadBox("post", $("dpost"));
 
   $("fpre").value = "";
   $("fpost").value = "";
@@ -697,191 +1285,385 @@ $("reset").onclick = () => {
   $("result").innerHTML = "";
 
   refresh();
-};
+
+});
 
 
-$("go").onclick = async () => {
-  const out = $("result");
+function createProbabilityBars(probabilities) {
 
-  out.className = "show loading";
-  out.innerHTML = `
+  if (!probabilities || typeof probabilities !== "object") {
+    return "";
+  }
+
+
+  return Object.entries(probabilities)
+
+    .map(([key, value]) => {
+
+      const probability = Number(value);
+
+      if (!Number.isFinite(probability)) {
+        return "";
+      }
+
+
+      const percentage = Math.max(
+        0,
+        Math.min(100, probability * 100)
+      );
+
+
+      return `
+        <div class="bar">
+          <span>${escapeHTML(LABELS[key] || key)}</span>
+
+          <div class="track">
+            <div
+              class="fill"
+              data-w="${percentage.toFixed(1)}"
+              style="background:${COLORS[key] || "var(--ink)"}"
+            ></div>
+          </div>
+
+          <span>${percentage.toFixed(1)}%</span>
+        </div>
+      `;
+
+    })
+
+    .join("");
+
+}
+
+
+$("go").addEventListener("click", async () => {
+
+  const output = $("result");
+
+
+  if (!files.pre || !files.post) {
+    return;
+  }
+
+
+  output.className = "show loading";
+
+
+  output.innerHTML = `
     <div class="loading-state">
       <span class="spinner"></span>
       <span>Analysing image pair…</span>
     </div>
   `;
 
+
   $("go").disabled = true;
 
-  const fd = new FormData();
 
-  fd.append("pre_image", files.pre);
-  fd.append("post_image", files.post);
+  const formData = new FormData();
+
+  formData.append("pre_image", files.pre);
+  formData.append("post_image", files.post);
+
 
   try {
-    const r = await fetch("/predict/damage", {
+
+    const response = await fetch(`${API_BASE}/predict/damage`, {
       method: "POST",
-      body: fd
+      body: formData
     });
 
-    const j = await r.json();
 
-    if (!r.ok) {
-      throw new Error(j.detail || "Request failed");
+    let data;
+
+    try {
+
+      data = await response.json();
+
+    } catch {
+
+      throw new Error(
+        "The inference service returned an invalid response."
+      );
+
     }
 
-    const cls = j.damage_class;
 
-    const bars = Object.entries(j.class_probabilities)
-      .map(([k, v]) => `
-        <div class="bar">
-          <span>${LABELS[k] || k}</span>
+    if (!response.ok) {
 
-          <div class="track">
-            <div
-              class="fill"
-              data-w="${(v * 100).toFixed(1)}"
-              style="background:${COLORS[k] || "var(--ink)"}">
-            </div>
-          </div>
+      throw new Error(
+        data.detail ||
+        data.message ||
+        "The inference request failed."
+      );
 
-          <span>${(v * 100).toFixed(1)}%</span>
-        </div>
-      `)
-      .join("");
+    }
 
-    out.innerHTML = `
+
+    const className = data.damage_class;
+
+    const label =
+      LABELS[className] ||
+      "Unknown result";
+
+    const color =
+      COLORS[className] ||
+      "var(--ink)";
+
+
+    const confidence =
+      Number(data.confidence);
+
+
+    const confidenceText =
+      Number.isFinite(confidence)
+        ? `${(confidence * 100).toFixed(1)}% model probability`
+        : "Probability unavailable";
+
+
+    const bars =
+      createProbabilityBars(data.class_probabilities);
+
+
+    output.className = "show";
+
+
+    output.innerHTML = `
+
       <div class="result-heading">
+
         <span class="section-kicker">MODEL OUTPUT</span>
 
         <div class="verdict">
-          <h3 style="color:${COLORS[cls] || "var(--ink)"}">
-            ${LABELS[cls] || cls}
+
+          <h3 style="color:${color}">
+            ${escapeHTML(label)}
           </h3>
 
-          <span>${(j.confidence * 100).toFixed(1)}% confidence</span>
+          <span>
+            ${escapeHTML(confidenceText)}
+          </span>
+
         </div>
+
       </div>
 
+
       <p class="result-note">
-        Classification based on the visual difference between the
-        submitted pre- and post-flood building crops.
+        Classification based on the submitted pre- and post-flood
+        building crops. The displayed probability should not be
+        interpreted as calibrated certainty.
       </p>
+
 
       <div class="bars">
         ${bars}
       </div>
+
     `;
+
 
     requestAnimationFrame(() => {
-      out.querySelectorAll(".fill").forEach(f => {
-        f.style.width = f.dataset.w + "%";
-      });
+
+      output
+        .querySelectorAll(".fill")
+        .forEach(fill => {
+
+          fill.style.width =
+            `${fill.dataset.w}%`;
+
+        });
+
     });
 
-  } catch (e) {
-    out.innerHTML = `
-      <p class="err">${e.message}</p>
+
+  } catch (error) {
+
+    output.className = "show";
+
+    output.innerHTML = `
+      <div class="error-box">
+        <strong>Inference unavailable</strong>
+        <p>${escapeHTML(error.message || "Something went wrong.")}</p>
+      </div>
     `;
+
   }
 
+
   refresh();
-};
+
+});
+
 
 checkHealth();
 
 
 /* Name-tag cursor over upload areas */
+
 (function() {
-  if (
-    !matchMedia("(pointer:fine)").matches ||
-    matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
+
+  const finePointer =
+    matchMedia("(pointer:fine)").matches;
+
+  const reducedMotion =
+    matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+
+  if (!finePointer || reducedMotion) {
     return;
   }
 
-  const cur = $("cur");
-  const lab = cur.querySelector(".lab");
 
-  document.querySelectorAll(".drop").forEach(z => {
-    z.classList.add("nocursor");
+  const cursor = $("cur");
+  const label = cursor.querySelector(".lab");
 
-    z.addEventListener("pointerenter", () => {
-      lab.textContent = z.dataset.cursor;
-      cur.classList.add("on");
+
+  document
+    .querySelectorAll(".drop")
+    .forEach(drop => {
+
+      drop.classList.add("nocursor");
+
+
+      drop.addEventListener("pointerenter", () => {
+
+        label.textContent =
+          drop.dataset.cursor || "Upload image";
+
+        cursor.classList.add("on");
+
+      });
+
+
+      drop.addEventListener("pointermove", event => {
+
+        cursor.style.transform =
+          `translate(${event.clientX - 3}px,${event.clientY - 3}px)`;
+
+      });
+
+
+      drop.addEventListener("pointerleave", () => {
+
+        cursor.classList.remove("on");
+
+      });
+
     });
 
-    z.addEventListener("pointermove", e => {
-      cur.style.transform =
-        `translate(${e.clientX - 3}px,${e.clientY - 3}px)`;
-    });
-
-    z.addEventListener("pointerleave", () => {
-      cur.classList.remove("on");
-    });
-  });
 })();
 
 
 /* Closing scrolling text band */
+
 (function() {
+
   const band = $("band");
 
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+
+  if (
+    matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+
     band.classList.add("static");
+
     return;
+
   }
 
-  const rows = [...band.querySelectorAll(".row")];
-  const unit = rows.map(r => r.firstElementChild);
 
-  rows.forEach((r, i) => {
+  const rows =
+    [...band.querySelectorAll(".row")];
+
+  const units =
+    rows.map(row => row.firstElementChild);
+
+
+  rows.forEach((row, index) => {
+
     for (
       let n = 0;
-      n < 24 && r.offsetWidth < innerWidth * 2 + unit[i].offsetWidth;
+      n < 24 &&
+      row.offsetWidth <
+      innerWidth * 2 + units[index].offsetWidth;
       n++
     ) {
-      r.appendChild(unit[i].cloneNode(true));
+
+      row.appendChild(
+        units[index].cloneNode(true)
+      );
+
     }
+
   });
 
-  const pos = [0, 0];
-  let dir = 1;
-  let v = 0;
-  let last = scrollY;
-  let t0 = performance.now();
 
-  function tick(t) {
-    const dt = Math.max(1, t - t0) / 1000;
+  const positions = [0, 0];
 
-    t0 = t;
+  let direction = 1;
+  let velocity = 0;
+  let lastScroll = scrollY;
+  let previousTime = performance.now();
 
-    v = v * 0.9 + ((scrollY - last) / dt) * 0.1;
-    last = scrollY;
 
-    if (v > 20) {
-      dir = 1;
-    } else if (v < -20) {
-      dir = -1;
+  function tick(time) {
+
+    const delta =
+      Math.max(1, time - previousTime) / 1000;
+
+
+    previousTime = time;
+
+
+    velocity =
+      velocity * 0.9 +
+      ((scrollY - lastScroll) / delta) * 0.1;
+
+
+    lastScroll = scrollY;
+
+
+    if (velocity > 20) {
+      direction = 1;
+    } else if (velocity < -20) {
+      direction = -1;
     }
 
+
     const speed =
-      30 * (1 + Math.min(Math.abs(v) / 200, 4));
+      30 *
+      (1 + Math.min(Math.abs(velocity) / 200, 4));
 
-    rows.forEach((r, i) => {
-      const w = unit[i].offsetWidth || 1;
 
-      pos[i] += (i ? -1 : 1) * dir * speed * dt;
+    rows.forEach((row, index) => {
 
-      r.style.transform =
-        `translateX(-${((pos[i] % w) + w) % w}px)`;
+      const width =
+        units[index].offsetWidth || 1;
+
+
+      positions[index] +=
+        (index ? -1 : 1) *
+        direction *
+        speed *
+        delta;
+
+
+      row.style.transform =
+        `translateX(-${((positions[index] % width) + width) % width}px)`;
+
     });
 
+
     requestAnimationFrame(tick);
+
   }
 
+
   requestAnimationFrame(tick);
+
 })();
+
 </script>
 
 </body>
